@@ -1,13 +1,14 @@
 import mongoose from "mongoose";
+import {MONGODB_URI} from "./config.service";
 
-export const connect = (dbUri: string) => {
+export const connectDB = () => {
 
     const dbOptions = {
         useNewUrlParser: true,
         useUnifiedTopology: true
     }
 
-    mongoose.connect(dbUri, dbOptions)
+    mongoose.connect(MONGODB_URI, dbOptions)
         .then(() => {
             console.log("successfully connected to the DB");
         }).catch(error => {

@@ -2,10 +2,10 @@ import express = require("express");
 import http = require("http");
 import {Application} from "express";
 import {projectsRoutesConfig} from "./projects/routes.config";
-import {connect} from "./common/db.service";
-import {MONGODB_URI, PORT} from "./common/config.service";
+import {connectDB} from "./common/db.service";
+import {PORT} from "./common/config.service";
 
-connect(MONGODB_URI);
+connectDB();
 
 const app: Application = express();
 const main: Application = express();

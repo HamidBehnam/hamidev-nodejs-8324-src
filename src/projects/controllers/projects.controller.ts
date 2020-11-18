@@ -1,12 +1,28 @@
 import {Request, Response} from "express";
-import * as projectsModel from "../models/projects.model";
+import {Project} from "../models/projects.model";
+
+export const createProject = async (request: Request, response: Response) => {
+    try {
+
+        const projectData = {
+            ...request.body
+        };
+
+        const project = await Project.create(projectData);
+
+        response.status(201).send(project);
+    } catch (error) {
+
+        response.status(500).send(error);
+    }
+};
 
 export const getProjects = async (request: Request, response: Response) => {
     try {
 
-        const theResult = await projectsModel.getProjects();
+        const projects = await Project.find({});
 
-        response.status(200).send(theResult);
+        response.status(200).send(projects);
     } catch (error) {
 
         response.status(500).send(error);

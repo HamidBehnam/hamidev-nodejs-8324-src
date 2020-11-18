@@ -10,6 +10,9 @@ connectDB();
 const app: Application = express();
 const main: Application = express();
 
+app.use(express.json());
+app.use(express.urlencoded());
+
 projectsRoutesConfig(app);
 
 main.use('/api/v1', app);

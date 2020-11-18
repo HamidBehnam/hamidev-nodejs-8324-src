@@ -5,4 +5,8 @@ export const projectsRoutesConfig = (app: Application) => {
     app.get('/projects', [
         projectsController.getProjects
     ]);
+
+    app.post('/projects', [
+        projectsController.createProject
+    ]);
 };

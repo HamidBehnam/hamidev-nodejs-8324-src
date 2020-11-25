@@ -4,6 +4,7 @@ import {Application} from "express";
 import {projectsRoutesConfig} from "./projects/routes.config";
 import {connectDB} from "./common/db.service";
 import {PORT} from "./common/config.service";
+import {jwtCheck} from "./common/auth.service";
 
 connectDB();
 
@@ -12,6 +13,7 @@ const main: Application = express();
 
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(jwtCheck);
 
 projectsRoutesConfig(app);
 

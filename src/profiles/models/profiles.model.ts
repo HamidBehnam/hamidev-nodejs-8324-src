@@ -1,5 +1,4 @@
 import {model, Model, Document, Schema} from "mongoose";
-import validator from "validator";
 
 interface IProfile extends Document{
     //the userId here is the user's id in Auth0.
@@ -7,7 +6,6 @@ interface IProfile extends Document{
     firstName: string;
     lastName: string;
     description: string;
-    email: string;
 }
 
 const ProfileSchema: Schema = new Schema<any>({
@@ -25,13 +23,6 @@ const ProfileSchema: Schema = new Schema<any>({
     },
     description: {
         type: String,
-        required: true
-    },
-    email: {
-        type: String,
-        trim: true,
-        lowercase: true,
-        validate: [validator.isEmail, "invalid email"],
         required: true
     }
 });

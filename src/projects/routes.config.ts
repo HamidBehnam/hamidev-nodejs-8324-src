@@ -9,6 +9,7 @@ export const projectsRoutesConfig = (app: Application) => {
     ]);
 
     app.post('/projects', [
+        jwtCheck,
         projectsController.createProject
     ]);
 };

@@ -7,4 +7,14 @@ export const profilesRoutesConfig = (app: Application) => {
         jwtCheck,
         profilesController.createProfile
     ]);
+
+    app.get('/profiles', [
+        jwtCheck,
+        profilesController.getProfiles
+    ]);
+
+    app.get('/profiles/:id', [
+        jwtCheck,
+        profilesController.getProfile
+    ]);
 };

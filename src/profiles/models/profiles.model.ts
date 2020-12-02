@@ -25,6 +25,21 @@ const ProfileSchema: Schema = new Schema<any>({
         type: String,
         required: true
     }
+}, {
+    toJSON: {
+        virtuals: true
+    },
+    id: false
+});
+
+export const profilesProjection = {
+    lastName: true,
+    firstName: true,
+    fullName: true
+};
+
+ProfileSchema.virtual('fullName').get(function (this: any) {
+    return `${this.firstName} ${this.lastName}`;
 });
 
 export const Profile: Model<IProfile> = model('Profile', ProfileSchema);

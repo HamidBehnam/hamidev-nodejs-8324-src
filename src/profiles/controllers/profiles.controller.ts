@@ -38,6 +38,18 @@ export const getProfiles = async (request: Auth0Request, response: Response) => 
     }
 };
 
+export const getMyProfile = async (request: Auth0Request, response: Response) => {
+    try {
+
+        const profile = await Profile.findOne({userId: request.user.sub});
+
+        response.status(200).send(profile);
+    } catch (error) {
+
+        response.status(500).send(error);
+    }
+};
+
 export const getProfile = async (request: Auth0Request, response: Response) => {
     try {
 

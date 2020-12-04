@@ -13,6 +13,11 @@ export const profilesRoutesConfig = (app: Application) => {
         profilesController.getProfiles
     ]);
 
+    app.get('/profiles/my', [
+        jwtCheck,
+        profilesController.getMyProfile
+    ]);
+
     app.get('/profiles/:id', [
         jwtCheck,
         profilesController.getProfile

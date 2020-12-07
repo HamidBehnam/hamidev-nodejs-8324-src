@@ -10,13 +10,13 @@ export class AppComponent {
   title = 'angular-sample-app';
   accessToken: string;
 
-  constructor(public auth: AuthService) {
-    this.auth.user$.subscribe(user => {
+  constructor(public authService: AuthService) {
+    this.authService.user$.subscribe(user => {
       console.log(user);
     });
   }
 
   getAccessToken() {
-    this.auth.getAccessTokenSilently().subscribe(token => this.accessToken = token);
+    this.authService.getAccessTokenSilently().subscribe(token => this.accessToken = token);
   }
 }

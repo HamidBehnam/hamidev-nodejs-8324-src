@@ -3,6 +3,7 @@ import JwksRsa from "jwks-rsa";
 import jwt_decode from "jwt-decode";
 import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
+import {Auth0MetaData} from "./types.service";
 
 class AuthService {
     private readonly _jwtCheck: jwt.RequestHandler;
@@ -30,7 +31,7 @@ class AuthService {
         return decodedToken.exp * 1000 > Date.now();
     }
 
-    getMachineToMachineAccessToken(): Promise<string | AxiosError> {
+    private getMachineToMachineAccessToken(): Promise<string | AxiosError> {
         return new Promise<string>((resolve, reject) => {
 
             if (this.machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(this.machineToMachineAccessToken))) {
@@ -64,6 +65,21 @@ class AuthService {
                 });
             }
         });
+    }
+
+    async updateMetaData(userId: string, metadata: Auth0MetaData): Promise<AxiosResponse | AxiosError> {
+        const axios = require("axios").default;
+
+        const token = await this.getMachineToMachineAccessToken();
+
+        const userPatchOptions: AxiosRequestConfig = {
+            method: 'PATCH',
+            url: `https://${configService.auth0_domain}/api/v2/users/` + userId,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token},
+            data: metadata
+        };
+
+        return axios.request(userPatchOptions);
     }
 }
 

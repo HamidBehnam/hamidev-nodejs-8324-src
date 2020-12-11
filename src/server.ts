@@ -2,11 +2,11 @@ import express = require("express");
 import http = require("http");
 import {Application} from "express";
 import {projectsRoutesConfig} from "./projects/routes.config";
-import {connectDB} from "./common/services/db.service";
-import {PORT} from "./common/services/config.service";
+import {dbService} from "./common/services/db.service";
+import {configService} from "./common/services/config.service";
 import {profilesRoutesConfig} from "./profiles/routes.config";
 
-connectDB();
+dbService.connectDB();
 
 const app: Application = express();
 const main: Application = express();
@@ -21,6 +21,6 @@ main.use('/api/v1', app);
 
 const server = http.createServer(main);
 
-server.listen(PORT, () => {
-    return console.log(`server is listening on ${PORT}`);
+server.listen(configService.port, () => {
+    return console.log(`server is listening on ${configService.port}`);
 });

@@ -4,7 +4,7 @@ export interface Auth0Request extends Request {
     user?: any;
 }
 
-export interface AuthMetaData {
+export interface Auth0MetaData {
     user_metadata?: object;
     app_metadata?: object;
 }

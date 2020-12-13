@@ -1,4 +1,4 @@
-import {AuthMetaData, Auth0Request} from "../../common/services/types.service";
+import {Auth0MetaData, Auth0Request} from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
 import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
@@ -20,18 +20,19 @@ export const createProfile = async (request: Auth0Request, response: Response, n
 
         const profile = await Profile.create(profileData);
 
-        // todo: the following approach in terms of adding the profile status to the token might not work,
-        //  because we can't revoke the access token in Auth0, as a result the next request still comes with the
-        //  wrong value in the token, this approach (adding the information to the token) might work for
-        //  insensitive data where we won't lose much even if user sends the current token before it gets expired
+        // todo: the following approach in terms of adding the profile status to the token might be useful for
+        //  insensitive scenarios like f/e scenarios but might not work for all the b/e scenarios because we can't
+        //  revoke the access token in Auth0, as a result the next request still comes with the wrong value in the
+        //  token, this approach (adding the information to the token) might work for insensitive data where we won't
+        //  lose much even if user sends the current token before it gets expired
 
-        // const metadata: AuthMetaData = {
-        //     app_metadata: {
-        //         has_profile: true
-        //     }
-        // };
-        //
-        // await authService.updateMetaData(request.user.sub, metadata);
+        const metadata: Auth0MetaData = {
+            app_metadata: {
+                has_profile: true
+            }
+        };
+
+        await authService.updateMetaData(request.user.sub, metadata);
 
         response.status(201).send(profile);
     } catch (error) {

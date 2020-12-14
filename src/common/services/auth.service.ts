@@ -4,10 +4,11 @@ import jwt_decode from "jwt-decode";
 import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
 import {Auth0MetaData} from "./types.service";
+import axios = require("axios");
 
 class AuthService {
     private readonly _jwtCheck: jwt.RequestHandler;
-    private machineToMachineAccessToken: string | undefined;
+    private machineToMachineAccessToken = '';
 
     constructor() {
         this._jwtCheck = jwt({
@@ -32,7 +33,7 @@ class AuthService {
     }
 
     private getMachineToMachineAccessToken(): Promise<string | AxiosError> {
-        return new Promise<string>((resolve, reject) => {
+        return new Promise<string | AxiosError>((resolve, reject) => {
 
             if (this.machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(this.machineToMachineAccessToken))) {
 
@@ -41,7 +42,7 @@ class AuthService {
             } else {
 
                 console.log('connecting to the auth0 server to get the token.............');
-                const axios = require("axios").default;
+
 
                 const options: AxiosRequestConfig = {
                     method: 'POST',
@@ -55,7 +56,7 @@ class AuthService {
                     }
                 };
 
-                axios.request(options).then((response: AxiosResponse) => {
+                axios.default.request(options).then((response: AxiosResponse) => {
 
                     this.machineToMachineAccessToken = response.data.access_token;
                     resolve(this.machineToMachineAccessToken);
@@ -68,8 +69,6 @@ class AuthService {
     }
 
     async updateMetaData(userId: string, metadata: Auth0MetaData): Promise<AxiosResponse | AxiosError> {
-        const axios = require("axios").default;
-
         const token = await this.getMachineToMachineAccessToken();
 
         const userPatchOptions: AxiosRequestConfig = {
@@ -79,7 +78,7 @@ class AuthService {
             data: metadata
         };
 
-        return axios.request(userPatchOptions);
+        return axios.default.request(userPatchOptions);
     }
 }
 

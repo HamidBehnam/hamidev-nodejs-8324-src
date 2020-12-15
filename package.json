@@ -8,9 +8,11 @@
     "lint": "eslint . --ext .ts --color",
     "lint:watch": "esw --ext .ts --color --watch",
     "build": "tsc",
-    "build:pack": "webpack",
     "build:watch": "tsc --watch",
     "build:watch:debug": "tsc --watch --sourceMap",
+    "build:webpack": "webpack",
+    "build:webpack:watch": "webpack --watch",
+    "build:webpack:watch:progress": "webpack --watch --progress",
     "start": "node dist/server.js",
     "start:watch": "nodemon dist/server.js",
     "start:watch:debug": "nodemon --inspect dist/server.js"

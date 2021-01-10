@@ -1,12 +1,13 @@
 import fs from "fs";
 import dotenv from "dotenv";
+import path = require('path');
 
-if (fs.existsSync(".env")) {
+const envPath = path.resolve(__dirname, '../.env');
+if (fs.existsSync(envPath)) {
     console.log("Using .env file to supply config environment variables");
-    dotenv.config({ path: ".env" });
+    dotenv.config({ path: envPath });
 } else {
-    console.log("Using .env.example file to supply config environment variables");
-    dotenv.config({ path: ".env.example" });
+    throw new Error('please provide the .env file.');
 }
 
 class ConfigService {

@@ -9,7 +9,7 @@ export const createProfile = async (request: Auth0Request, response: Response, n
         const existingProfile = await Profile.findOne({userId: request.user.sub});
 
         if (existingProfile) {
-            response.status(400).send('user already has a profile!');
+            response.status(400).send('user already has a profile');
             return next();
         }
 

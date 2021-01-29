@@ -11,6 +11,7 @@ dbService.connectDB();
 const app: Application = express();
 const main: Application = express();
 
+// https://stackoverflow.com/a/51844327/2281403
 app.use(express.json());
 app.use(express.urlencoded());
 

@@ -14,7 +14,8 @@ export const createProject = async (request: Auth0Request, response: Response, n
         }
 
         const projectData = {
-            ...request.body
+            ...request.body,
+            createdBy: request.user.sub
         };
 
         const project = await Project.create(projectData);
@@ -29,7 +30,7 @@ export const createProject = async (request: Auth0Request, response: Response, n
 export const getProjects = async (request: Auth0Request, response: Response) => {
     try {
 
-        const projects = await Project.find({});
+        const projects = await Project.find({createdBy: request.user.sub});
 
         response.status(200).send(projects);
     } catch (error) {

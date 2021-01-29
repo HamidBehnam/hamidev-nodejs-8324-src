@@ -1,21 +1,26 @@
 import {Document, model, Model, Schema} from "mongoose";
 
 export interface IProject extends Document {
-    projectName: string;
-    projectCode: string;
-    projectStatus: string;
+    title: string;
+    description: string;
+    status: string;
+    createdBy: string;
 }
 
 const ProjectSchema: Schema = new Schema<any>({
-    projectName: {
+    title: {
         type: String,
         required: true
     },
-    projectCode: {
+    description: {
         type: String,
         required: true
     },
-    projectStatus: {
+    status: {
+        type: String,
+        required: true
+    },
+    createdBy: {
         type: String,
         required: true
     }
@@ -25,8 +30,8 @@ const ProjectSchema: Schema = new Schema<any>({
     }
 });
 
-ProjectSchema.virtual("projectNameCode").get(function (this: any) {
-    return `${this.projectName} - ${this.projectCode}`;
+ProjectSchema.virtual("titleStatus").get(function (this: any) {
+    return `${this.title} - ${this.status}`;
 });
 
 export const Project: Model<IProject> = model('Project', ProjectSchema);

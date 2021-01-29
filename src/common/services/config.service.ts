@@ -3,9 +3,12 @@ import dotenv from "dotenv";
 import path = require('path');
 
 const envPath = path.resolve(__dirname, '../.env');
-if (fs.existsSync(envPath)) {
+// the alternative path is added to cover the cases where I need to compile using
+// tsc compiler locally and for debugging purposes
+const envPathAlternative = path.resolve(__dirname, '../../../.env');
+if (fs.existsSync(envPath) || fs.existsSync(envPathAlternative)) {
     console.log("Using .env file to supply config environment variables");
-    dotenv.config({ path: envPath });
+    dotenv.config({ path: fs.existsSync(envPath) ? envPath : envPathAlternative });
 } else {
     throw new Error('please provide the .env file.');
 }
@@ -17,6 +20,7 @@ class ConfigService {
     private readonly _auth0_audience: string;
     private readonly _machine_to_machine_client_id: string;
     private readonly _machine_to_machine_client_secret: string;
+    private readonly _auth0_custom_rule_namespace: string;
 
     constructor() {
         this._port = process.env.PORT;
@@ -25,6 +29,7 @@ class ConfigService {
         this._auth0_audience = process.env.AUTH0_AUDIENCE as string;
         this._machine_to_machine_client_id = process.env.MACHINE_TO_MACHINE_CLIENT_ID as string;
         this._machine_to_machine_client_secret = process.env.MACHINE_TO_MACHINE_CLIENT_SECRET as string;
+        this._auth0_custom_rule_namespace = process.env.AUTH0_CUSTOM_RULE_NAMESPACE as string;
     }
 
 
@@ -50,6 +55,10 @@ class ConfigService {
 
     get machine_to_machine_client_secret(): string {
         return this._machine_to_machine_client_secret;
+    }
+
+    get auth0_custom_rule_namespace(): string {
+        return this._auth0_custom_rule_namespace;
     }
 }
 

@@ -7,7 +7,7 @@ export interface IProject extends Document {
     createdBy: string;
 }
 
-const ProjectSchema: Schema = new Schema<any>({
+const ProjectSchema: Schema = new Schema({
     title: {
         type: String,
         required: true
@@ -30,7 +30,7 @@ const ProjectSchema: Schema = new Schema<any>({
     }
 });
 
-ProjectSchema.virtual("titleStatus").get(function (this: any) {
+ProjectSchema.virtual("titleStatus").get(function (this: IProject) {
     return `${this.title} - ${this.status}`;
 });
 

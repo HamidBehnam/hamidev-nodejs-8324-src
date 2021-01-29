@@ -2,6 +2,8 @@ import {Auth0MetaData, Auth0Request} from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
 import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
+import {Email} from "../../emails/models/emails.model";
+import {configService} from "../../common/services/config.service";
 
 export const createProfile = async (request: Auth0Request, response: Response, next: NextFunction) => {
     try {
@@ -18,7 +20,13 @@ export const createProfile = async (request: Auth0Request, response: Response, n
             userId: request.user.sub
         };
 
-        const profile = await Profile.create(profileData);
+        const emailData = {
+            userId: request.user.sub,
+            email: request.user[`${configService.auth0_custom_rule_namespace}email`]
+        };
+
+        const userProfile = await Profile.create(profileData);
+        const userEmail = await Email.create(emailData);
 
         // todo: the following approach in terms of adding the profile status to the token might be useful for
         //  insensitive scenarios like f/e scenarios but might not work for all the b/e scenarios because we can't
@@ -34,7 +42,10 @@ export const createProfile = async (request: Auth0Request, response: Response, n
 
         await authService.updateMetaData(request.user.sub, metadata);
 
-        response.status(201).send(profile);
+        response.status(201).send({
+            userProfile,
+            userEmail
+        });
     } catch (error) {
 
         response.status(500).send(error);

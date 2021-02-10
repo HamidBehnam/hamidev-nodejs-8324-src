@@ -2,6 +2,7 @@ import {NextFunction, Response} from "express";
 import {Project} from "../models/projects.model";
 import {Auth0Request} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
+import {sendgridService} from "../../common/services/sendgrid.service";
 
 export const createProject = async (request: Auth0Request, response: Response, next: NextFunction) => {
     try {
@@ -31,6 +32,15 @@ export const getProjects = async (request: Auth0Request, response: Response) => 
     try {
 
         const projects = await Project.find({createdBy: request.user.sub});
+
+        sendgridService
+            .sendEmail(
+                {email: "xxxxxx@gmail.com", name: "Hamid"},
+                {email: "info@hamidbehnam.com", name: "Project Management App"},
+                "d-bb86afa964f741f88da1c473b3382fe2"
+            )
+            .then(() => console.log('Email sent'))
+            .catch(error => console.log(error));
 
         response.status(200).send(projects);
     } catch (error) {

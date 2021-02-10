@@ -21,6 +21,7 @@ class ConfigService {
     private readonly _machine_to_machine_client_id: string;
     private readonly _machine_to_machine_client_secret: string;
     private readonly _auth0_custom_rule_namespace: string;
+    private readonly _sendgrid_api_key: string;
 
     constructor() {
         this._port = process.env.PORT;
@@ -30,6 +31,7 @@ class ConfigService {
         this._machine_to_machine_client_id = process.env.MACHINE_TO_MACHINE_CLIENT_ID as string;
         this._machine_to_machine_client_secret = process.env.MACHINE_TO_MACHINE_CLIENT_SECRET as string;
         this._auth0_custom_rule_namespace = process.env.AUTH0_CUSTOM_RULE_NAMESPACE as string;
+        this._sendgrid_api_key = process.env.SENDGRID_API_KEY as string;
     }
 
 
@@ -59,6 +61,10 @@ class ConfigService {
 
     get auth0_custom_rule_namespace(): string {
         return this._auth0_custom_rule_namespace;
+    }
+
+    get sendgrid_api_key(): string {
+        return this._sendgrid_api_key;
     }
 }
 

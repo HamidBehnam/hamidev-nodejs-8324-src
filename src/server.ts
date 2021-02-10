@@ -20,6 +20,7 @@ projectsRoutesConfig(app);
 
 main.use('/api/v1', app);
 
+// https://stackoverflow.com/q/17696801/2281403
 const server = http.createServer(main);
 
 server.listen(configService.port, () => {

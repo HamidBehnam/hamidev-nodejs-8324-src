@@ -1,15 +1,19 @@
-import {Application} from "express";
-import * as projectsController from "./controllers/projects.controller";
+import {Router} from "express";
 import {authService} from "../common/services/auth.service";
+import {projectsController} from "./controllers/projects.controller";
 
-export const projectsRoutesConfig = (app: Application) => {
-    app.get('/projects', [
+export const projectsRoutesConfig = (): Router => {
+    const projectsRouter = Router();
+
+    projectsRouter.get('/projects', [
         authService.jwtCheck,
         projectsController.getProjects
     ]);
 
-    app.post('/projects', [
+    projectsRouter.post('/projects', [
         authService.jwtCheck,
         projectsController.createProject
     ]);
+
+    return projectsRouter;
 };

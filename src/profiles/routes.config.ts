@@ -1,25 +1,30 @@
-import {Application} from "express";
-import * as profilesController from "./controllers/profiles.controller";
+import {Router} from "express";
 import {authService} from "../common/services/auth.service";
+import {profilesController} from "./controllers/profiles.controller";
 
-export const profilesRoutesConfig = (app: Application) => {
-    app.post('/profiles', [
+export const profilesRoutesConfig = (): Router => {
+
+    const profileRouter = Router();
+
+    profileRouter.post('/profiles', [
         authService.jwtCheck,
         profilesController.createProfile
     ]);
 
-    app.get('/profiles', [
+    profileRouter.get('/profiles', [
         authService.jwtCheck,
         profilesController.getProfiles
     ]);
 
-    app.get('/profiles/my', [
+    profileRouter.get('/profiles/my', [
         authService.jwtCheck,
         profilesController.getMyProfile
     ]);
 
-    app.get('/profiles/:id', [
+    profileRouter.get('/profiles/:id', [
         authService.jwtCheck,
         profilesController.getProfile
     ]);
+
+    return profileRouter;
 };

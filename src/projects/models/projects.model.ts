@@ -27,7 +27,8 @@ const ProjectSchema: Schema = new Schema({
 }, {
     toJSON: {
         virtuals: true
-    }
+    },
+    timestamps: true
 });
 
 ProjectSchema.virtual("titleStatus").get(function (this: IProject) {

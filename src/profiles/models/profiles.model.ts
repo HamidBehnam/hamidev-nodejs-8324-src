@@ -29,6 +29,7 @@ const ProfileSchema: Schema = new Schema({
     toJSON: {
         virtuals: true
     },
+    timestamps: true,
     id: false
 });
 

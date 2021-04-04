@@ -16,14 +16,14 @@ export const profilesRoutesConfig = (): Router => {
         profilesController.getProfiles
     ]);
 
-    profileRouter.get('/profiles/my', [
-        authService.jwtCheck,
-        profilesController.getMyProfile
-    ]);
-
     profileRouter.get('/profiles/:id', [
         authService.jwtCheck,
         profilesController.getProfile
+    ]);
+
+    profileRouter.get('/user-profiles/:id', [
+        authService.jwtCheck,
+        profilesController.getUserProfiles
     ]);
 
     return profileRouter;

@@ -8,10 +8,10 @@ class ProjectsController {
     async createProject(request: Auth0Request, response: Response, next: NextFunction) {
         try {
 
-            const userProfile = await Profile.findOne({userId: request.user.sub});
+            const creatorProfile = await Profile.findById(request.body.creatorProfile);
 
-            if (!userProfile) {
-                response.status(400).send('user must have a profile');
+            if (!creatorProfile) {
+                response.status(400).send('creator profile does not exist');
                 return next();
             }
 

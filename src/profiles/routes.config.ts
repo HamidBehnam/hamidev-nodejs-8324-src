@@ -1,5 +1,5 @@
 import {Router} from "express";
-import {authService} from "../common/services/auth.service";
+import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {profilesController} from "./controllers/profiles.controller";
 
 export const profilesRoutesConfig = (): Router => {
@@ -7,22 +7,22 @@ export const profilesRoutesConfig = (): Router => {
     const profileRouter = Router();
 
     profileRouter.post('/profiles', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         profilesController.createProfile
     ]);
 
     profileRouter.get('/profiles', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         profilesController.getProfiles
     ]);
 
     profileRouter.get('/profiles/:id', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         profilesController.getProfile
     ]);
 
     profileRouter.get('/user-profiles/:id', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         profilesController.getUserProfiles
     ]);
 

@@ -1,17 +1,17 @@
 import {Router} from "express";
-import {authService} from "../common/services/auth.service";
+import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {projectsController} from "./controllers/projects.controller";
 
 export const projectsRoutesConfig = (): Router => {
     const projectsRouter = Router();
 
     projectsRouter.get('/projects', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         projectsController.getProjects
     ]);
 
     projectsRouter.post('/projects', [
-        authService.jwtCheck,
+        authMiddleware.checkJwt,
         projectsController.createProject
     ]);
 

@@ -1,5 +1,3 @@
-import jwt from "express-jwt";
-import JwksRsa from "jwks-rsa";
 import jwt_decode from "jwt-decode";
 import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
@@ -7,26 +5,7 @@ import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
 
 class AuthService {
-    private readonly _jwtCheck: jwt.RequestHandler;
     private machineToMachineAccessToken = '';
-
-    constructor() {
-        this._jwtCheck = jwt({
-            secret: JwksRsa.expressJwtSecret({
-                cache: true,
-                rateLimit: true,
-                jwksRequestsPerMinute: 5,
-                jwksUri: `https://${configService.auth0_domain}/.well-known/jwks.json`
-            }),
-            audience: configService.auth0_audience,
-            issuer: `https://${configService.auth0_domain}/`,
-            algorithms: ['RS256']
-        });
-    }
-
-    get jwtCheck(): jwt.RequestHandler {
-        return this._jwtCheck;
-    }
 
     private static checkTokenExpiration(decodedToken: any): boolean {
         return decodedToken.exp * 1000 > Date.now();

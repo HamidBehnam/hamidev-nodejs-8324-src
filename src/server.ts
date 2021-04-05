@@ -5,6 +5,8 @@ import {dbService} from "./common/services/db.service";
 import {configService} from "./common/services/config.service";
 import {profilesRoutesConfig} from "./profiles/routes.config";
 import {projectsRoutesConfig} from "./projects/routes.config";
+import {usersRoutesConfig} from "./users/routes.config";
+import {morganMiddleware} from "./common/middlewares/morgan.middleware";
 
 dbService.connectDB();
 
@@ -14,8 +16,10 @@ const main: Application = express();
 // https://stackoverflow.com/a/51844327/2281403
 app.use(express.json());
 app.use(express.urlencoded());
+app.use(morganMiddleware.morgan);
 app.use(profilesRoutesConfig());
 app.use(projectsRoutesConfig());
+app.use(usersRoutesConfig());
 
 main.use('/api/v1', app);
 

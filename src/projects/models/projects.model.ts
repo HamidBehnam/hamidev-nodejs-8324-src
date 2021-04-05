@@ -5,6 +5,7 @@ export interface IProject extends Document {
     description: string;
     status: string;
     createdBy: string;
+    creatorProfile: string;
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -21,6 +22,10 @@ const ProjectSchema: Schema = new Schema({
         required: true
     },
     createdBy: {
+        type: String,
+        required: true
+    },
+    creatorProfile: {
         type: String,
         required: true
     }

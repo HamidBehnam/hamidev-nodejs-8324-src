@@ -65,10 +65,10 @@ class ProfilesController {
         }
     }
 
-    async getMyProfile(request: Auth0Request, response: Response) {
+    async getProfile(request: Auth0Request, response: Response) {
         try {
 
-            const profile = await Profile.findOne({userId: request.user.sub});
+            const profile = await Profile.findById(request.params.id);
 
             response.status(200).send(profile);
         } catch (error) {
@@ -77,12 +77,11 @@ class ProfilesController {
         }
     }
 
-    async getProfile(request: Auth0Request, response: Response) {
+    async getUserProfiles(request: Auth0Request, response: Response) {
         try {
+            const userProfiles = await Profile.find({userId: request.params.id});
 
-            const profile = await Profile.findById(request.params.id);
-
-            response.status(200).send(profile);
+            response.status(200).send(userProfiles);
         } catch (error) {
 
             response.status(500).send(error);

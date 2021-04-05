@@ -4,7 +4,7 @@ module.exports = (env = {}) => {
 
     const config = {
         entry: './src/server.ts',
-        mode: env.mode || 'production',
+        mode: env.NODE_ENV || 'development',
         devtool: env.devtool || false,
         target: 'node',
         output: {

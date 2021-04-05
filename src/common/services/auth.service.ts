@@ -4,6 +4,7 @@ import {configService} from "./config.service";
 import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
 import {promises as fsPromises, constants as fsConstants} from "fs";
+import {winstonService} from "./winston.service";
 
 class AuthService {
     private machineToMachineAccessToken = '';
@@ -88,6 +89,13 @@ class AuthService {
     }
 
     async getUsers(): Promise<AxiosResponse | AxiosError> {
+        console.log("process.env.NODE_ENV: ", process.env.NODE_ENV);
+        winstonService.Logger.error("This is an error log");
+        winstonService.Logger.warn("This is a warn log");
+        winstonService.Logger.info("This is a info log");
+        winstonService.Logger.http("This is a http log");
+        winstonService.Logger.debug("This is a debug log");
+
         const token = await this.getMachineToMachineAccessToken();
 
         const usersGetOptions: AxiosRequestConfig = {

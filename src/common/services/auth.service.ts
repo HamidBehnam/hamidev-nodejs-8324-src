@@ -3,6 +3,7 @@ import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
 import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
+import {promises as fsPromises, constants as fsConstants} from "fs";
 
 class AuthService {
     private machineToMachineAccessToken = '';
@@ -11,13 +12,36 @@ class AuthService {
         return decodedToken.exp * 1000 > Date.now();
     }
 
-    private getMachineToMachineAccessToken(): Promise<string | AxiosError> {
-        return new Promise<string | AxiosError>((resolve, reject) => {
+    private async getMachineToMachineAccessToken(): Promise<string | AxiosError> {
 
-            if (this.machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(this.machineToMachineAccessToken))) {
+        if (this.machineToMachineAccessToken) {
+
+            return this.tokenProvider(this.machineToMachineAccessToken);
+        } else {
+
+            try {
+                await fsPromises.access('m2mAccessTokenCache.txt', fsConstants.F_OK);
+                try {
+                    const m2mAccessTokenFile = await fsPromises.readFile('m2mAccessTokenCache.txt');
+                    this.machineToMachineAccessToken = m2mAccessTokenFile.toString();
+                    return this.tokenProvider(this.machineToMachineAccessToken);
+                } catch (error) {
+
+                    return new Promise<string | AxiosError>((resolve, reject) => reject('was unable to ready the cache file'));
+                }
+            } catch {
+                return this.tokenProvider();
+            }
+        }
+
+    }
+
+    private tokenProvider(machineToMachineAccessToken?: string): Promise<string | AxiosError> {
+        return new Promise<string | AxiosError>((resolve, reject) => {
+            if (machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(machineToMachineAccessToken))) {
 
                 // re using the cached token
-                resolve(this.machineToMachineAccessToken);
+                resolve(machineToMachineAccessToken);
             } else {
 
                 const options: AxiosRequestConfig = {
@@ -32,10 +56,16 @@ class AuthService {
                     }
                 };
 
-                axios.default.request(options).then((response: AxiosResponse) => {
+                axios.default.request(options).then(async (response: AxiosResponse) => {
 
                     this.machineToMachineAccessToken = response.data.access_token;
-                    resolve(this.machineToMachineAccessToken);
+
+                    try {
+                        await fsPromises.writeFile('m2mAccessTokenCache.txt', this.machineToMachineAccessToken);
+                        resolve(this.machineToMachineAccessToken);
+                    } catch (error) {
+                        reject('was unable to write into the cache file');
+                    }
                 }).catch((error: AxiosError) => {
 
                     reject(error);

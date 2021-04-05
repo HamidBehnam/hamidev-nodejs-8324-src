@@ -17,12 +17,14 @@ class AuthService {
 
         if (this.machineToMachineAccessToken) {
 
+            winstonService.Logger.info('reading the token from the memory');
             return this.tokenProvider(this.machineToMachineAccessToken);
         } else {
 
             try {
                 await fsPromises.access('m2mAccessTokenCache.txt', fsConstants.F_OK);
                 try {
+                    winstonService.Logger.info('reading the m2m access token from the file');
                     const m2mAccessTokenFile = await fsPromises.readFile('m2mAccessTokenCache.txt');
                     this.machineToMachineAccessToken = m2mAccessTokenFile.toString();
                     return this.tokenProvider(this.machineToMachineAccessToken);
@@ -45,6 +47,7 @@ class AuthService {
                 resolve(machineToMachineAccessToken);
             } else {
 
+                winstonService.Logger.info('loading the m2m access token from the management api');
                 const options: AxiosRequestConfig = {
                     method: 'POST',
                     url: `https://${configService.auth0_domain}/oauth/token`,
@@ -62,6 +65,7 @@ class AuthService {
                     this.machineToMachineAccessToken = response.data.access_token;
 
                     try {
+                        winstonService.Logger.info('writing the m2m access token to the cache file');
                         await fsPromises.writeFile('m2mAccessTokenCache.txt', this.machineToMachineAccessToken);
                         resolve(this.machineToMachineAccessToken);
                     } catch (error) {
@@ -89,12 +93,6 @@ class AuthService {
     }
 
     async getUsers(): Promise<AxiosResponse | AxiosError> {
-        console.log("process.env.NODE_ENV: ", process.env.NODE_ENV);
-        winstonService.Logger.error("This is an error log");
-        winstonService.Logger.warn("This is a warn log");
-        winstonService.Logger.info("This is a info log");
-        winstonService.Logger.http("This is a http log");
-        winstonService.Logger.debug("This is a debug log");
 
         const token = await this.getMachineToMachineAccessToken();
 

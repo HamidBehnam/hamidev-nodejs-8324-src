@@ -17,7 +17,7 @@ class AuthService {
 
         if (this.machineToMachineAccessToken) {
 
-            winstonService.Logger.info('reading the token from the memory');
+            winstonService.Logger.info('reading the m2m access token from the memory');
             return this.tokenProvider(this.machineToMachineAccessToken);
         } else {
 

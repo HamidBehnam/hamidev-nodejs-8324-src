@@ -5,6 +5,7 @@ import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
 import {promises as fsPromises, constants as fsConstants} from "fs";
 import {winstonService} from "./winston.service";
+import * as path from "path";
 
 class AuthService {
     private machineToMachineAccessToken = '';
@@ -25,7 +26,7 @@ class AuthService {
                 await fsPromises.access('m2mAccessTokenCache.txt', fsConstants.F_OK);
                 try {
                     winstonService.Logger.info('reading the m2m access token from the file');
-                    const m2mAccessTokenFile = await fsPromises.readFile('m2mAccessTokenCache.txt');
+                    const m2mAccessTokenFile = await fsPromises.readFile(path.resolve(__dirname, '../m2mAccessTokenCache.txt'));
                     this.machineToMachineAccessToken = m2mAccessTokenFile.toString();
                     return this.tokenProvider(this.machineToMachineAccessToken);
                 } catch (error) {
@@ -66,7 +67,7 @@ class AuthService {
 
                     try {
                         winstonService.Logger.info('writing the m2m access token to the cache file');
-                        await fsPromises.writeFile('m2mAccessTokenCache.txt', this.machineToMachineAccessToken);
+                        await fsPromises.writeFile(path.resolve(__dirname, '../m2mAccessTokenCache.txt'), this.machineToMachineAccessToken);
                         resolve(this.machineToMachineAccessToken);
                     } catch (error) {
                         reject('was unable to write into the cache file');

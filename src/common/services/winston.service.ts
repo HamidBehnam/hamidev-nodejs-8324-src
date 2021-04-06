@@ -1,5 +1,6 @@
 import winston from 'winston'
 import path = require('path');
+import * as fs from "fs";
 
 class WinstonService {
     private levels = {
@@ -38,6 +39,10 @@ class WinstonService {
     ]
 
     constructor() {
+        if (!fs.existsSync(path.resolve(__dirname, '../logs'))) {
+            fs.mkdirSync(path.resolve(__dirname, '../logs'));
+        }
+
         winston.addColors(this.colors)
     }
 

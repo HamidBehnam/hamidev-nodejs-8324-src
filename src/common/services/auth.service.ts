@@ -23,10 +23,10 @@ class AuthService {
         } else {
 
             try {
-                await fsPromises.access('m2mAccessTokenCache.txt', fsConstants.F_OK);
+                await fsPromises.access(path.resolve(__dirname, '../logs/.m2m.cache'), fsConstants.F_OK);
                 try {
                     winstonService.Logger.info('reading the m2m access token from the file');
-                    const m2mAccessTokenFile = await fsPromises.readFile(path.resolve(__dirname, '../m2mAccessTokenCache.txt'));
+                    const m2mAccessTokenFile = await fsPromises.readFile(path.resolve(__dirname, '../logs/.m2m.cache'));
                     this.machineToMachineAccessToken = m2mAccessTokenFile.toString();
                     return this.tokenProvider(this.machineToMachineAccessToken);
                 } catch (error) {
@@ -67,7 +67,7 @@ class AuthService {
 
                     try {
                         winstonService.Logger.info('writing the m2m access token to the cache file');
-                        await fsPromises.writeFile(path.resolve(__dirname, '../m2mAccessTokenCache.txt'), this.machineToMachineAccessToken);
+                        await fsPromises.writeFile(path.resolve(__dirname, '../logs/.m2m.cache'), this.machineToMachineAccessToken);
                         resolve(this.machineToMachineAccessToken);
                     } catch (error) {
                         reject('was unable to write into the cache file');

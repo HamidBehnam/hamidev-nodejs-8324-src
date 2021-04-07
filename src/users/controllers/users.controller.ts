@@ -14,6 +14,15 @@ class UsersController {
         }
     }
 
+    async getUser(request: Auth0Request, response: Response) {
+        try {
+            const {data} = await authService.getUser(request.params.id) as AxiosResponse;
+            response.status(200).send(data);
+        } catch (error) {
+            response.status(500).send(error);
+        }
+    }
+
     async getUserRoles(request: Auth0Request, response: Response) {
         try {
             const {data} = await authService.getUserRoles(request.params.id) as AxiosResponse;

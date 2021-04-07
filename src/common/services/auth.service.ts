@@ -106,6 +106,19 @@ class AuthService {
         return axios.default.request(usersGetOptions);
     }
 
+    async getUser(userId: string): Promise<AxiosResponse | AxiosError> {
+
+        const token = await this.getMachineToMachineAccessToken();
+
+        const usersGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(usersGetOptions);
+    }
+
     async getUserRoles(userId: string): Promise<AxiosResponse | AxiosError> {
         const token = await this.getMachineToMachineAccessToken();
 

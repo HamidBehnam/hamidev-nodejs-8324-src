@@ -12,6 +12,12 @@ export const usersRoutesConfig = (): Router => {
         usersController.getUsers
     ]);
 
+    usersRouter.get('/users/:id', [
+        authMiddleware.checkJwt,
+        authMiddleware.checkPermissions([Permissions.ReadUsers]),
+        usersController.getUser
+    ]);
+
     usersRouter.get('/users/:id/roles', [
         authMiddleware.checkJwt,
         authMiddleware.checkPermissions([Permissions.ReadUserRoles]),

@@ -1,5 +1,5 @@
-import winston from 'winston'
-import path = require('path');
+import winston from "winston";
+import * as path from "path";
 
 class WinstonService {
     private levels = {

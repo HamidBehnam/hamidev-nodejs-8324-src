@@ -1,18 +1,19 @@
-import {NextFunction, Response} from "express";
+import {Response} from "express";
 import {Project} from "../models/projects.model";
 import {Auth0Request} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 
 class ProjectsController {
-    async createProject(request: Auth0Request, response: Response, next: NextFunction) {
+    async createProject(request: Auth0Request, response: Response) {
         try {
 
             const creatorProfile = await Profile.findById(request.body.creatorProfile);
 
             if (!creatorProfile) {
-                response.status(400).send('creator profile does not exist');
-                return next();
+                return response.status(400).send('creator profile does not exist');
+            } else if (creatorProfile.userId !== request.user.sub) {
+                return response.status(400).send('the provided profile does not belong to the user');
             }
 
             const projectData = {

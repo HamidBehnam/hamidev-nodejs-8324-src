@@ -4,6 +4,7 @@ import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
 import {Email} from "../../emails/models/emails.model";
 import {configService} from "../../common/services/config.service";
+import {Types} from "mongoose";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -75,6 +76,45 @@ class ProfilesController {
 
             response.status(500).send(error);
         }
+    }
+
+    async updateProfile(request: Auth0Request, response: Response) {
+         try {
+             const updatedProfile = await Profile.findOneAndUpdate({
+                 _id: Types.ObjectId(request.params.id),
+                 userId: request.user.sub
+             }, request.body, {
+                 new: true,
+                 runValidators: true
+             });
+
+             if (!updatedProfile) {
+                 return response.status(404).send("the profile does not exist or does not belong to the user");
+             }
+
+             response.status(200).send(updatedProfile);
+         } catch (error) {
+
+             response.status(500).send(error);
+         }
+    }
+
+    async deleteProfile(request: Auth0Request, response: Response) {
+         try {
+             const deletedProfile = await Profile.findOneAndDelete({
+                 _id: Types.ObjectId(request.params.id),
+                 userId: request.user.sub
+             });
+
+             if (!deletedProfile) {
+                 return response.status(404).send("the profile does not exist or does not belong to the user");
+             }
+
+             response.status(200).send("profile was successfully deleted");
+         } catch (error) {
+
+             response.status(500).send(error);
+         }
     }
 
     async getUserProfiles(request: Auth0Request, response: Response) {

@@ -21,6 +21,16 @@ export const profilesRoutesConfig = (): Router => {
         profilesController.getProfile
     ]);
 
+    profileRouter.patch('/profiles/:id', [
+        authMiddleware.checkJwt,
+        profilesController.updateProfile
+    ]);
+
+    profileRouter.delete('/profiles/:id', [
+        authMiddleware.checkJwt,
+        profilesController.deleteProfile
+    ]);
+
     profileRouter.get('/user-profiles/:id', [
         authMiddleware.checkJwt,
         profilesController.getUserProfiles

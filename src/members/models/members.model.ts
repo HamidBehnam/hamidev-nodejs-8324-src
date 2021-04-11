@@ -24,13 +24,16 @@ const MemberSchema: Schema = new Schema({
         required: true
     },
     role: {
-        type: String,
+        type: Number,
         enum: [
             ProjectOperationRole.Viewer,
             ProjectOperationRole.Developer,
             ProjectOperationRole.Admin
-        ]
+        ],
+        required: true
     }
+}, {
+    timestamps: true
 });
 
 export const Member: Model<IMember> = model('Member', MemberSchema);

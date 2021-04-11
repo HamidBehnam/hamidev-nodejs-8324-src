@@ -15,14 +15,13 @@ export enum Auth0Permissions {
     ReadAuth0UserPermissions = 'read:auth0_user_permissions',
     ReadAuth0Roles = 'read:auth0_roles',
     CreateAuth0UserRoles = 'create:auth0_user_roles',
-    DeleteAuth0UserRoles = 'delete:auth0_user_roles',
-    ReadPermissions = 'read:permissions',
-    ReadRoles = 'read:roles',
-    CreatePermissions = 'create:permissions',
-    CreateRoles = 'create:roles',
-    DeletePermissions = 'delete:permissions',
-    DeleteRoles = 'delete:roles',
-    UpdatePermissions = 'update:permissions',
-    UpdateRoles = 'update:roles'
+    DeleteAuth0UserRoles = 'delete:auth0_user_roles'
 }
 
+export enum ProjectOperationRole {
+    Guest = 1000,
+    Viewer = 2000,
+    Developer = 3000,
+    Admin = 4000,
+    Creator = 5000
+}

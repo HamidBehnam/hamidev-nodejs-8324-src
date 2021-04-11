@@ -1,15 +1,16 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
+import {ProjectOperationRole} from "../../common/services/types.service";
 
 export interface IMember extends Document {
-    project: Types.ObjectId;
+    userId: string;
     profile: Types.ObjectId;
+    project: Types.ObjectId;
     role: Types.ObjectId;
 }
 
 const MemberSchema: Schema = new Schema({
-    project: {
-        type: Types.ObjectId,
-        ref: 'Project',
+    userId: {
+        type: String,
         required: true
     },
     profile: {
@@ -17,10 +18,18 @@ const MemberSchema: Schema = new Schema({
         ref: 'Profile',
         required: true
     },
-    role: {
+    project: {
         type: Types.ObjectId,
-        ref: 'Role',
+        ref: 'Project',
         required: true
+    },
+    role: {
+        type: String,
+        enum: [
+            ProjectOperationRole.Viewer,
+            ProjectOperationRole.Developer,
+            ProjectOperationRole.Admin
+        ]
     }
 });
 

@@ -50,6 +50,18 @@ class ProjectsController {
             response.status(500).send(error);
         }
     }
+
+    async getProject(request: Auth0Request, response: Response) {
+        try {
+
+            const project = await Project.findById(request.params.id);
+
+            response.status(200).send(project);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
 }
 
 export const projectsController = new ProjectsController();

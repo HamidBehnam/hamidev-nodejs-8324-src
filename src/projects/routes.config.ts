@@ -5,14 +5,19 @@ import {projectsController} from "./controllers/projects.controller";
 export const projectsRoutesConfig = (): Router => {
     const projectsRouter = Router();
 
+    projectsRouter.post('/projects', [
+        authMiddleware.checkJwt,
+        projectsController.createProject
+    ]);
+
     projectsRouter.get('/projects', [
         authMiddleware.checkJwt,
         projectsController.getProjects
     ]);
 
-    projectsRouter.post('/projects', [
+    projectsRouter.get('/projects/:id', [
         authMiddleware.checkJwt,
-        projectsController.createProject
+        projectsController.getProject
     ]);
 
     return projectsRouter;

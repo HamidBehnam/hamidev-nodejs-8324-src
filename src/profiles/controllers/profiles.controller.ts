@@ -4,7 +4,6 @@ import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
 import {Email} from "../../emails/models/emails.model";
 import {configService} from "../../common/services/config.service";
-import {Types} from "mongoose";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -81,7 +80,7 @@ class ProfilesController {
     async updateProfile(request: Auth0Request, response: Response) {
          try {
              const updatedProfile = await Profile.findOneAndUpdate({
-                 _id: Types.ObjectId(request.params.id),
+                 _id: request.params.id,
                  userId: request.user.sub
              }, request.body, {
                  new: true,
@@ -102,7 +101,7 @@ class ProfilesController {
     async deleteProfile(request: Auth0Request, response: Response) {
          try {
              const deletedProfile = await Profile.findOneAndDelete({
-                 _id: Types.ObjectId(request.params.id),
+                 _id: request.params.id,
                  userId: request.user.sub
              });
 

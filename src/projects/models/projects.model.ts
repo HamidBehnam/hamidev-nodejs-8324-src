@@ -1,4 +1,4 @@
-import {Document, model, Model, Schema} from "mongoose";
+import {Document, model, Model, Schema, Types} from "mongoose";
 
 export interface IProject extends Document {
     title: string;
@@ -28,6 +28,12 @@ const ProjectSchema: Schema = new Schema({
     creatorProfile: {
         type: String,
         required: true
+    },
+    members: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Member'
+        }]
     }
 }, {
     toJSON: {

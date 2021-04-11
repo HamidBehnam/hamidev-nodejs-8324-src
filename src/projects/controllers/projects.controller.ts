@@ -33,7 +33,16 @@ class ProjectsController {
     async getProjects(request: Auth0Request, response: Response) {
         try {
 
-            const projects = await Project.find({createdBy: request.user.sub});
+            const projects = await Project.find({createdBy: request.user.sub}).populate({
+                path: 'members',
+                model: 'Member',
+                populate: [{
+                    path: 'profile',
+                    model: 'Profile',
+                    select: '-__v'
+                }],
+                select: '-__v -project'
+            });
 
             sendgridService
                 .sendEmail(
@@ -54,7 +63,16 @@ class ProjectsController {
     async getProject(request: Auth0Request, response: Response) {
         try {
 
-            const project = await Project.findById(request.params.id);
+            const project = await Project.findById(request.params.id).populate({
+                path: 'members',
+                model: 'Member',
+                populate: [{
+                    path: 'profile',
+                    model: 'Profile',
+                    select: '-__v'
+                }],
+                select: '-__v -project'
+            });
 
             response.status(200).send(project);
         } catch (error) {

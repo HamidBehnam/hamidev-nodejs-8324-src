@@ -1,50 +1,50 @@
 import {Router} from "express";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {usersController} from "./controllers/users.controller";
-import {Permissions} from "../common/services/types.service";
+import {Auth0Permissions} from "../common/services/types.service";
 
 export const usersRoutesConfig = (): Router => {
     const usersRouter = Router();
 
     usersRouter.get('/users', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.ReadUsers]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0Users]),
         usersController.getUsers
     ]);
 
     usersRouter.get('/users/:id', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.ReadUsers]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0Users]),
         usersController.getUser
     ]);
 
     usersRouter.get('/users/:id/roles', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.ReadUserRoles]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0UserRoles]),
         usersController.getUserRoles
     ]);
 
     usersRouter.post('/users/:id/roles', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.CreateUserRoles]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.CreateAuth0UserRoles]),
         usersController.setUserRoles
     ]);
 
     usersRouter.delete('/users/:id/roles', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.DeleteUserRoles]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.DeleteAuth0UserRoles]),
         usersController.deleteUserRoles
     ]);
 
     usersRouter.get('/users/:id/permissions', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.ReadUserPermissions]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0UserPermissions]),
         usersController.getUserPermissions
     ]);
 
-    usersRouter.get('/roles', [
+    usersRouter.get('/user-roles', [
         authMiddleware.checkJwt,
-        authMiddleware.checkPermissions([Permissions.ReadRoles]),
+        authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0Roles]),
         usersController.getRoles
     ]);
 

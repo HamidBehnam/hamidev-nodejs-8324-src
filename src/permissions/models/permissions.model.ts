@@ -1,11 +1,16 @@
 import {Document, model, Model, Schema} from "mongoose";
 
 export interface IPermission extends Document {
-    permission: string;
+    name: string;
+    description: string;
 }
 
 const PermissionSchema: Schema = new Schema({
-    permission: {
+    name: {
+        type: String,
+        required: true
+    },
+    description: {
         type: String,
         required: true
     }

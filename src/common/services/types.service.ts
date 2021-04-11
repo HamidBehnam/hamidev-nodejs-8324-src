@@ -9,12 +9,20 @@ export interface Auth0MetaData {
     app_metadata?: object;
 }
 
-export enum Permissions {
-    ReadUsers = 'read:users',
-    ReadUserRoles = 'read:user_roles',
-    ReadUserPermissions = 'read:user_permissions',
+export enum Auth0Permissions {
+    ReadAuth0Users = 'read:auth0_users',
+    ReadAuth0UserRoles = 'read:auth0_user_roles',
+    ReadAuth0UserPermissions = 'read:auth0_user_permissions',
+    ReadAuth0Roles = 'read:auth0_roles',
+    CreateAuth0UserRoles = 'create:auth0_user_roles',
+    DeleteAuth0UserRoles = 'delete:auth0_user_roles',
+    ReadPermissions = 'read:permissions',
     ReadRoles = 'read:roles',
-    CreateUserRoles = 'create:user_roles',
-    DeleteUserRoles = 'delete:user_roles'
+    CreatePermissions = 'create:permissions',
+    CreateRoles = 'create:roles',
+    DeletePermissions = 'delete:permissions',
+    DeleteRoles = 'delete:roles',
+    UpdatePermissions = 'update:permissions',
+    UpdateRoles = 'update:roles'
 }
 

@@ -24,7 +24,7 @@ class AuthMiddleware {
         return this._checkJwt;
     }
 
-    checkPermissions(permissions: string[]) {
+    checkAuth0Permissions(permissions: string[]) {
         return jwtAuthz(permissions, {
             customScopeKey: "permissions",
             checkAllScopes: true

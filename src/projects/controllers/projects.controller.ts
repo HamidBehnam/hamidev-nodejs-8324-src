@@ -1,8 +1,9 @@
 import {Response} from "express";
 import {Project} from "../models/projects.model";
-import {Auth0Request} from "../../common/services/types.service";
+import {Auth0Request, ProjectOperationRole} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
+import {projectAuthorizationService} from "../services/project-authorization.service";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -75,6 +76,36 @@ class ProjectsController {
             });
 
             response.status(200).send(project);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
+
+    async updateProject(request: Auth0Request, response: Response) {
+        try {
+
+            const project = await Project.findById(request.params.id);
+
+            if (!project) {
+                return response.status(404).send('the project does not exist');
+            }
+
+            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, project, ProjectOperationRole.Admin);
+
+            if (!isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project owner');
+            }
+
+            // the reason for not using the updateOne on project document is because updateOne will return a result object not the updated document so there'll be another request needed to get the updated document.
+            const updatedProject = await Project.findByIdAndUpdate(
+                request.params.id,
+                request.body, {
+                    new: true,
+                    runValidators: true
+                });
+
+            response.status(200).send(updatedProject);
         } catch (error) {
 
             response.status(500).send(error);

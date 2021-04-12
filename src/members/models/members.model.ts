@@ -5,7 +5,7 @@ export interface IMember extends Document {
     userId: string;
     profile: Types.ObjectId;
     project: Types.ObjectId;
-    role: Types.ObjectId;
+    role: number;
 }
 
 const MemberSchema: Schema = new Schema({

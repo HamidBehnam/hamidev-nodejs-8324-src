@@ -1,4 +1,5 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
+import {IMember} from "../../members/models/members.model";
 
 export interface IProject extends Document {
     title: string;
@@ -6,6 +7,7 @@ export interface IProject extends Document {
     status: string;
     createdBy: string;
     creatorProfile: string;
+    members: IMember[];
 }
 
 const ProjectSchema: Schema = new Schema({

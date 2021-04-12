@@ -63,6 +63,13 @@ class MembersController {
 
     async updateMember(request: Auth0Request, response: Response) {
         try {
+
+            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(request.user.sub, request.params.id, ProjectOperationRole.Admin);
+
+            if (!isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project owner');
+            }
+
             const updatedMember = await Member.findByIdAndUpdate(
                 request.params.id,
                 request.body, {
@@ -83,6 +90,13 @@ class MembersController {
 
     async deleteMember(request: Auth0Request, response: Response) {
         try {
+
+            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(request.user.sub, request.params.id, ProjectOperationRole.Admin);
+
+            if (!isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project owner');
+            }
+
             const deletedMember = await Member.findByIdAndDelete(request.params.id);
 
             if (!deletedMember) {

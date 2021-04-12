@@ -1,12 +1,19 @@
 import {Auth0Request} from "../../common/services/types.service";
 import {Response} from "express";
 import {Member} from "../models/members.model";
+import {Project} from "../../projects/models/projects.model";
 
 class MembersController {
 
     async createMember(request: Auth0Request, response: Response) {
         try {
             const member = await Member.create(request.body);
+
+            await Project.findByIdAndUpdate(request.body.project, {
+                $push: {
+                    members: member._id
+                }
+            });
 
             response.status(201).send(member);
         } catch (error) {
@@ -64,6 +71,12 @@ class MembersController {
             if (!deletedMember) {
                 return response.status(404).send("the member does not exist");
             }
+
+            await Project.findByIdAndUpdate(request.body.project, {
+                $pull: {
+                    members: deletedMember._id
+                }
+            });
 
             response.status(200).send("the member was successfully deleted");
         } catch (error) {

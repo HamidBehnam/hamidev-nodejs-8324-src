@@ -34,6 +34,7 @@ const ProfileSchema: Schema = new Schema({
 });
 
 export const profilesProjection = {
+    userId: true,
     lastName: true,
     firstName: true,
     fullName: true

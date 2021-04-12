@@ -118,7 +118,7 @@ class ProfilesController {
 
     async getUserProfiles(request: Auth0Request, response: Response) {
         try {
-            const userProfiles = await Profile.find({userId: request.params.id});
+            const userProfiles = await Profile.find({userId: request.params.id === 'me' ? request.user.sub : request.params.id});
 
             response.status(200).send(userProfiles);
         } catch (error) {

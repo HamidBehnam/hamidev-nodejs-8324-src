@@ -34,7 +34,7 @@ class ProjectsController {
     async getProjects(request: Auth0Request, response: Response) {
         try {
 
-            const projects = await Project.find({createdBy: request.user.sub}).populate({
+            const projects = await Project.find({}).populate({
                 path: 'members',
                 model: 'Member',
                 populate: [{

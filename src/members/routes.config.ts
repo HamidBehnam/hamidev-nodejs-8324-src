@@ -1,6 +1,7 @@
 import {Router} from "express";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {membersController} from "./controllers/members.controller";
+import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
 
 export const membersRoutesConfig = (): Router => {
     const membersRouter = Router();
@@ -22,6 +23,7 @@ export const membersRoutesConfig = (): Router => {
 
     membersRouter.patch('/members/:id', [
         authMiddleware.checkJwt,
+        fieldsMiddleware.disallow(['project', 'profile', 'userId']),
         membersController.updateMember
     ]);
 

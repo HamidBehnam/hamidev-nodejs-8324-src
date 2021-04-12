@@ -1,8 +1,14 @@
-import {IProject} from "../models/projects.model";
+import {Project} from "../models/projects.model";
 import {ProjectOperationRole} from "../../common/services/types.service";
 
 class ProjectAuthorizationService {
-    async isAuthorized(userId: string, project: IProject, expectedRole: ProjectOperationRole): Promise<boolean> {
+    async isAuthorized(userId: string, projectId: string, expectedRole: ProjectOperationRole): Promise<boolean> {
+
+        const project = await Project.findById(projectId);
+
+        if (!project) {
+            return false;
+        }
 
         if (project.createdBy === userId) {
             return true;

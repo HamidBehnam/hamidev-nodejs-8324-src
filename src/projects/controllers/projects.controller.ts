@@ -14,7 +14,7 @@ class ProjectsController {
             if (!creatorProfile) {
                 return response.status(400).send('creator profile does not exist');
             } else if (creatorProfile.userId !== request.user.sub) {
-                return response.status(400).send('the provided profile does not belong to the user');
+                return response.status(400).send('provided profile does not belong to the user');
             }
 
             const projectData = {
@@ -85,13 +85,7 @@ class ProjectsController {
     async updateProject(request: Auth0Request, response: Response) {
         try {
 
-            const project = await Project.findById(request.params.id);
-
-            if (!project) {
-                return response.status(404).send('the project does not exist');
-            }
-
-            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, project, ProjectOperationRole.Admin);
+            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, request.params.id, ProjectOperationRole.Admin);
 
             if (!isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');

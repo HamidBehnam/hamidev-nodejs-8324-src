@@ -1,12 +1,29 @@
-import {Auth0Request} from "../../common/services/types.service";
+import {Auth0Request, ProjectOperationRole} from "../../common/services/types.service";
 import {Response} from "express";
 import {Member} from "../models/members.model";
 import {Project} from "../../projects/models/projects.model";
+import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
 
 class MembersController {
 
     async createMember(request: Auth0Request, response: Response) {
         try {
+
+            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, request.body.project, ProjectOperationRole.Admin);
+
+            if (!isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project owner');
+            }
+
+            const existingMember = await Member.findOne({
+                project: request.body.project,
+                profile: request.body.profile
+            })
+
+            if (existingMember) {
+                return response.status(400).send('project already has this member');
+            }
+
             const member = await Member.create(request.body);
 
             await Project.findByIdAndUpdate(request.body.project, {
@@ -24,7 +41,7 @@ class MembersController {
 
     async getMembers(request: Auth0Request, response: Response) {
         try {
-            const members = await Member.find({}).populate('project profile', '-__v');
+            const members = await Member.find({}).populate('project profile', '-members -__v');
 
             response.status(200).send(members);
         } catch (error) {
@@ -35,7 +52,7 @@ class MembersController {
 
     async getMember(request: Auth0Request, response: Response) {
         try {
-            const member = await Member.findById(request.params.id).populate('project profile', '-__v');
+            const member = await Member.findById(request.params.id).populate('project profile', '-members -__v');
 
             response.status(200).send(member);
         } catch (error) {
@@ -51,10 +68,10 @@ class MembersController {
                 request.body, {
                     new: true,
                     runValidators: true
-                }).populate('project profile', '-__v');
+                }).populate('project profile', '-members -__v');
 
             if (!updatedMember) {
-                return response.status(404).send("the member does not exist");
+                return response.status(404).send("member does not exist");
             }
 
             response.status(200).send(updatedMember);

@@ -23,6 +23,8 @@ export const membersRoutesConfig = (): Router => {
 
     membersRouter.patch('/members/:id', [
         authMiddleware.checkJwt,
+        // the reason for disallowing these fields is because changing these fields will change the context of the
+        // member, if these fields need to be changed it makes sense to delete the member and add it again.
         fieldsMiddleware.disallow(['project', 'profile', 'userId']),
         membersController.updateMember
     ]);

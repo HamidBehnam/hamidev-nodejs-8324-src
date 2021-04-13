@@ -25,6 +25,9 @@ class AuthMiddleware {
     }
 
     checkAuth0Permissions(permissions: string[]) {
+        // In the critical cases which we can't afford to have an outdated role from the token (for instance having
+        // an outdated role in a token which is not expired yet), we can directly
+        // get the user's role through the Auth0 management api instead.
         return jwtAuthz(permissions, {
             customScopeKey: "permissions",
             checkAllScopes: true

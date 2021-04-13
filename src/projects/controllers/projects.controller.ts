@@ -4,6 +4,7 @@ import {Auth0Request, ProjectOperationRole} from "../../common/services/types.se
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
+import {Member} from "../../members/models/members.model";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -85,7 +86,11 @@ class ProjectsController {
     async updateProject(request: Auth0Request, response: Response) {
         try {
 
-            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, request.params.id, ProjectOperationRole.Admin);
+            const isAuthorized = await projectAuthorizationService.isAuthorized(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
 
             if (!isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');
@@ -100,6 +105,31 @@ class ProjectsController {
                 });
 
             response.status(200).send(updatedProject);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
+
+    async deleteProject(request: Auth0Request, response: Response) {
+        try {
+            const isAuthorized = await projectAuthorizationService.isAuthorized(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
+
+            if (!isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project owner');
+            }
+
+            await Member.deleteMany({
+                project: request.params.id
+            });
+
+            await Project.findByIdAndDelete(request.params.id);
+
+            response.status(200).send('project was successfully deleted');
         } catch (error) {
 
             response.status(500).send(error);

@@ -9,7 +9,11 @@ class MembersController {
     async createMember(request: Auth0Request, response: Response) {
         try {
 
-            const isAuthorized = await projectAuthorizationService.isAuthorized(request.user.sub, request.body.project, ProjectOperationRole.Admin);
+            const isAuthorized = await projectAuthorizationService.isAuthorized(
+                request.user.sub,
+                request.body.project,
+                ProjectOperationRole.Admin
+            );
 
             if (!isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');
@@ -64,7 +68,11 @@ class MembersController {
     async updateMember(request: Auth0Request, response: Response) {
         try {
 
-            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(request.user.sub, request.params.id, ProjectOperationRole.Admin);
+            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
 
             if (!isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');
@@ -91,7 +99,11 @@ class MembersController {
     async deleteMember(request: Auth0Request, response: Response) {
         try {
 
-            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(request.user.sub, request.params.id, ProjectOperationRole.Admin);
+            const isAuthorized = await projectAuthorizationService.isAuthorizedByMember(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
 
             if (!isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');

@@ -42,7 +42,7 @@ export const usersRoutesConfig = (): Router => {
         usersController.getUserPermissions
     ]);
 
-    usersRouter.get('/user-roles', [
+    usersRouter.get('/roles', [
         authMiddleware.checkJwt,
         authMiddleware.checkAuth0Permissions([Auth0Permissions.ReadAuth0Roles]),
         usersController.getRoles

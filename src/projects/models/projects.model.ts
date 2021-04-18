@@ -8,6 +8,7 @@ export interface IProject extends Document {
     creatorProfile: string;
     //members type could be IMember[] or Types.ObjectId[] depending on if it's populated or not
     members: any[];
+    tasks: any[];
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -35,6 +36,12 @@ const ProjectSchema: Schema = new Schema({
         type: [{
             type: Types.ObjectId,
             ref: 'Member'
+        }]
+    },
+    tasks: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Task'
         }]
     }
 }, {

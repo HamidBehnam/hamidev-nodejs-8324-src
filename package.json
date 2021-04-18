@@ -45,6 +45,7 @@
     "express-jwt-authz": "^2.4.1",
     "jwks-rsa": "^1.11.0",
     "jwt-decode": "^3.1.2",
+    "mongodb-client-encryption": "^1.2.3",
     "mongoose": "^5.10.14",
     "morgan": "^1.10.0",
     "validator": "^13.1.17",

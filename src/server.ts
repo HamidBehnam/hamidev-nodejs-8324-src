@@ -7,6 +7,7 @@ import {profilesRoutesConfig} from "./profiles/routes.config";
 import {projectsRoutesConfig} from "./projects/routes.config";
 import {usersRoutesConfig} from "./users/routes.config";
 import {membersRoutesConfig} from "./members/routes.config";
+import {tasksRoutesConfig} from "./tasks/routes.config";
 import {morganMiddleware} from "./common/middlewares/morgan.middleware";
 
 dbService.connectDB();
@@ -22,6 +23,7 @@ app.use(profilesRoutesConfig());
 app.use(projectsRoutesConfig());
 app.use(usersRoutesConfig());
 app.use(membersRoutesConfig());
+app.use(tasksRoutesConfig());
 
 main.use('/api/v1', app);
 

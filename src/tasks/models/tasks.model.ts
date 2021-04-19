@@ -1,5 +1,5 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
-import {ProjectOperationRole} from "../../common/services/types.service";
+import {WorkStatus} from "../../common/services/types.service";
 
 export interface ITask extends Document {
     ownerUserId: string;
@@ -11,26 +11,36 @@ export interface ITask extends Document {
 }
 
 const TaskSchema: Schema = new Schema({
-    userId: {
-        type: String,
-        required: true
+    ownerUserId: {
+        type: String
     },
-    profile: {
+    owner: {
         type: Types.ObjectId,
-        ref: 'Profile',
-        required: true
+        ref: 'Member'
     },
     project: {
         type: Types.ObjectId,
         ref: 'Project',
         required: true
     },
-    role: {
-        type: Number,
+    title: {
+        type: String,
+        required: true
+    },
+    description: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
         enum: [
-            ProjectOperationRole.Viewer,
-            ProjectOperationRole.Developer,
-            ProjectOperationRole.Admin
+            WorkStatus.NotStarted,
+            WorkStatus.InProgress,
+            WorkStatus.Done,
+            WorkStatus.QA,
+            WorkStatus.UAT,
+            WorkStatus.MoreWorkIsNeeded,
+            WorkStatus.Accepted
         ],
         required: true
     }
@@ -38,5 +48,5 @@ const TaskSchema: Schema = new Schema({
     timestamps: true
 });
 
-export const Member: Model<IMember> = model('Member', MemberSchema);
+export const Task: Model<ITask> = model('Task', TaskSchema);
 

@@ -52,6 +52,38 @@ class TasksController {
             response.status(500).send(error);
         }
     }
+
+    async getTasks(request: Auth0Request, response: Response) {
+        try {
+            const tasks = await Task.find({}).populate('project', '-__v');
+
+            response.status(200).send(tasks);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
+
+    async getTask(request: Auth0Request, response: Response) {
+        try {
+            const task = await Task.findById(request.params.id).populate([{
+                path: 'project',
+                model: 'Project'
+            }, {
+                path: 'owner',
+                model: 'Member',
+                populate: [{
+                    path: 'profile',
+                    model: 'Profile'
+                }]
+            }]);
+
+            response.status(200).send(task);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
 }
 
 export const tasksController = new TasksController();

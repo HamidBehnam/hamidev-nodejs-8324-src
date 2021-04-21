@@ -1,6 +1,6 @@
 import {Response} from "express";
 import {Project} from "../models/projects.model";
-import {Auth0Request, ProjectOperationRole} from "../../common/services/types.service";
+import {Auth0Request, ProjectAuthorization, ProjectOperationRole} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
@@ -86,25 +86,31 @@ class ProjectsController {
     async updateProject(request: Auth0Request, response: Response) {
         try {
 
-            const isAuthorized = await projectAuthorizationService.isAuthorized(
+            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
                 request.user.sub,
                 request.params.id,
                 ProjectOperationRole.Admin
             );
 
-            if (!isAuthorized) {
+            if (!projectAuthorization.isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');
             }
 
-            // the reason for not using the updateOne on project document is because updateOne will return a result object not the updated document so there'll be another request needed to get the updated document.
-            const updatedProject = await Project.findByIdAndUpdate(
-                request.params.id,
-                request.body, {
-                    new: true,
-                    runValidators: true
-                });
+            if (!projectAuthorization.project) {
+                return response.status(400).send('project does not exist');
+            }
 
-            response.status(200).send(updatedProject);
+            await projectAuthorization.project.updateOne(request.body);
+
+            // TODO: REMOVE THIS AFTER TESTING
+            // const updatedProject = await Project.findByIdAndUpdate(
+            //     request.params.id,
+            //     request.body, {
+            //         new: true,
+            //         runValidators: true
+            //     });
+
+            response.status(200).send('project was successfully updated');
         } catch (error) {
 
             response.status(500).send(error);
@@ -113,13 +119,13 @@ class ProjectsController {
 
     async deleteProject(request: Auth0Request, response: Response) {
         try {
-            const isAuthorized = await projectAuthorizationService.isAuthorized(
+            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
                 request.user.sub,
                 request.params.id,
                 ProjectOperationRole.Admin
             );
 
-            if (!isAuthorized) {
+            if (!projectAuthorization.isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project owner');
             }
 
@@ -127,7 +133,11 @@ class ProjectsController {
                 project: request.params.id
             });
 
-            await Project.findByIdAndDelete(request.params.id);
+            if (!projectAuthorization.project) {
+                return response.status(400).send('project does not exist');
+            }
+
+            await projectAuthorization.project.deleteOne();
 
             response.status(200).send('project was successfully deleted');
         } catch (error) {

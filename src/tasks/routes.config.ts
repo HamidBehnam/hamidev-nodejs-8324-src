@@ -14,16 +14,16 @@ export const tasksRoutesConfig = (): Router => {
         tasksController.createTask
     ]);
 
-    // tasksRouter.get('/tasks', [
-    //     authMiddleware.checkJwt,
-    //     tasksController.getTasks
-    // ]);
-    //
-    // tasksRouter.get('/tasks/:id', [
-    //     authMiddleware.checkJwt,
-    //     tasksController.getTask
-    // ]);
-    //
+    tasksRouter.get('/tasks', [
+        authMiddleware.checkJwt,
+        tasksController.getTasks
+    ]);
+
+    tasksRouter.get('/tasks/:id', [
+        authMiddleware.checkJwt,
+        tasksController.getTask
+    ]);
+
     // tasksRouter.patch('/tasks/:id', [
     //     authMiddleware.checkJwt,
     //     // the reason for disallowing the project field is because changing the project field will change

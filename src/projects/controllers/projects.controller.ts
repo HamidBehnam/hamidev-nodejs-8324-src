@@ -122,14 +122,6 @@ class ProjectsController {
 
             await projectAuthorization.project.updateOne(request.body);
 
-            // TODO: REMOVE THIS AFTER TESTING
-            // const updatedProject = await Project.findByIdAndUpdate(
-            //     request.params.id,
-            //     request.body, {
-            //         new: true,
-            //         runValidators: true
-            //     });
-
             response.status(200).send('project was successfully updated');
         } catch (error) {
 

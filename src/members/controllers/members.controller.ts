@@ -1,4 +1,9 @@
-import {Auth0Request, ProjectAuthorization, ProjectOperationRole} from "../../common/services/types.service";
+import {
+    Auth0Request,
+    ProjectAuthorization,
+    ProjectAuthorizationByMember,
+    ProjectOperationRole
+} from "../../common/services/types.service";
 import {Response} from "express";
 import {Member} from "../models/members.model";
 import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
@@ -48,13 +53,6 @@ class MembersController {
                 }
             });
 
-            // TODO: REMOVE THIS AFTER TESTING
-            // await Project.findByIdAndUpdate(request.body.project, {
-            //     $push: {
-            //         members: member._id
-            //     }
-            // });
-
             response.status(201).send(member);
         } catch (error) {
 
@@ -87,28 +85,28 @@ class MembersController {
     async updateMember(request: Auth0Request, response: Response) {
         try {
 
-            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorizeByMember(
+            const projectAuthorizationByMember: ProjectAuthorizationByMember = await projectAuthorizationService.authorizeByMember(
                 request.user.sub,
                 request.params.id,
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
+            if (!projectAuthorizationByMember.isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project admin');
             }
 
-            const updatedMember = await Member.findByIdAndUpdate(
-                request.params.id,
-                request.body, {
-                    new: true,
-                    runValidators: true
-                }).populate('project profile', '-members -__v');
-
-            if (!updatedMember) {
+            if (!projectAuthorizationByMember.member) {
                 return response.status(404).send("member does not exist");
             }
 
-            response.status(200).send(updatedMember);
+            await projectAuthorizationByMember.member.updateOne(
+                request.body,
+                {
+                    runValidators: true
+                }
+            );
+
+            response.status(200).send('member was successfully updated');
         } catch (error) {
 
             response.status(500).send(error);
@@ -118,38 +116,31 @@ class MembersController {
     async deleteMember(request: Auth0Request, response: Response) {
         try {
 
-            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorizeByMember(
+            const projectAuthorizationByMember: ProjectAuthorizationByMember = await projectAuthorizationService.authorizeByMember(
                 request.user.sub,
                 request.params.id,
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
+            if (!projectAuthorizationByMember.isAuthorized) {
                 return response.status(401).send('permission denied, please contact the project admin');
             }
 
-            const deletedMember = await Member.findByIdAndDelete(request.params.id);
-
-            if (!deletedMember) {
+            if (!projectAuthorizationByMember.member) {
                 return response.status(404).send("member does not exist");
             }
 
-            if (!projectAuthorization.project) {
+            await projectAuthorizationByMember.member.deleteOne();
+
+            if (!projectAuthorizationByMember.project) {
                 return response.status(404).send("project does not exist");
             }
 
-            await projectAuthorization.project.updateOne({
+            await projectAuthorizationByMember.project.updateOne({
                 $pull: {
-                    members: deletedMember._id
+                    members: projectAuthorizationByMember.member._id
                 }
             });
-
-            // TODO: REMOVE THIS AFTER TESTING
-            // await Project.findByIdAndUpdate(request.body.project, {
-            //     $pull: {
-            //         members: deletedMember._id
-            //     }
-            // });
 
             response.status(200).send("the member was successfully deleted");
         } catch (error) {

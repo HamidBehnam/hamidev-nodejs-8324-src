@@ -25,6 +25,8 @@ class ProjectsController {
 
             const project = await Project.create(projectData);
 
+            await project.populate('creatorProfile', '-__v').execPopulate();
+
             response.status(201).send(project);
         } catch (error) {
 
@@ -35,7 +37,11 @@ class ProjectsController {
     async getProjects(request: Auth0Request, response: Response) {
         try {
 
-            const projects = await Project.find({}).populate({
+            const projects = await Project.find({}).populate([{
+                path: 'creatorProfile',
+                model: 'Profile',
+                select: '-__v'
+            },{
                 path: 'members',
                 model: 'Member',
                 populate: [{
@@ -44,7 +50,21 @@ class ProjectsController {
                     select: '-__v'
                 }],
                 select: '-__v -project'
-            });
+            }, {
+                path: 'tasks',
+                model: 'Task',
+                select: '-__v',
+                populate: [{
+                    path: 'owner',
+                    model: 'Member',
+                    select: 'profile',
+                    populate: [{
+                        path: 'profile',
+                        model: 'Profile',
+                        select: '-__v'
+                    }]
+                }]
+            }]);
 
             sendgridService
                 .sendEmail(
@@ -93,7 +113,7 @@ class ProjectsController {
             );
 
             if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project owner');
+                return response.status(401).send('permission denied, please contact the project admin');
             }
 
             if (!projectAuthorization.project) {
@@ -126,7 +146,7 @@ class ProjectsController {
             );
 
             if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project owner');
+                return response.status(401).send('permission denied, please contact the project admin');
             }
 
             await Member.deleteMany({

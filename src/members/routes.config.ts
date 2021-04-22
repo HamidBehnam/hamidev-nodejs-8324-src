@@ -8,7 +8,7 @@ export const membersRoutesConfig = (): Router => {
 
     membersRouter.post('/members', [
         authMiddleware.checkJwt,
-        // there's no need to disallow the userId because it'll be replaced in the controller anyways
+        fieldsMiddleware.disallow(['userId']),
         membersController.createMember
     ]);
 

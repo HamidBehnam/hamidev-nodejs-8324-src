@@ -8,9 +8,9 @@ export const projectsRoutesConfig = (): Router => {
 
     projectsRouter.post('/projects', [
         authMiddleware.checkJwt,
-        // the reason for disallowing 'members' field is to make sure members are gonna be
-        // created through its own endpoint so data will be in sync with the members collection
-        fieldsMiddleware.disallow(['members']),
+        // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
+        // created through their own endpoints so data will be in sync with the members and tasks collections
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy']),
         projectsController.createProject
     ]);
 
@@ -26,9 +26,9 @@ export const projectsRoutesConfig = (): Router => {
 
     projectsRouter.patch('/projects/:id', [
         authMiddleware.checkJwt,
-        // the reason for disallowing 'members' field is to make sure members are gonna be
-        // updated through its own endpoint so data will be in sync with the members collection
-        fieldsMiddleware.disallow(['members']),
+        // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
+        // created through their own endpoints so data will be in sync with the members and tasks collections
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'creatorProfile']),
         projectsController.updateProject
     ]);
 

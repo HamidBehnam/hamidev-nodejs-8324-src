@@ -1,4 +1,7 @@
 import {Request} from "express";
+import {IProject} from "../../projects/models/projects.model";
+import {IMember} from "../../members/models/members.model";
+import {ITask} from "../../tasks/models/tasks.model";
 
 export interface Auth0Request extends Request {
     user?: any;
@@ -24,4 +27,27 @@ export enum ProjectOperationRole {
     Developer = 3000,
     Admin = 4000,
     Creator = 5000
+}
+
+export enum WorkStatus {
+    NotStarted = 'not_started',
+    InProgress = 'in_progress',
+    Done = 'done',
+    QA = 'qa',
+    UAT = 'uat',
+    MoreWorkIsNeeded = 'more_work_is_needed',
+    Accepted = 'accepted'
+}
+
+export interface ProjectAuthorization {
+    isAuthorized: boolean;
+    project?: IProject;
+}
+
+export interface ProjectAuthorizationByMember extends ProjectAuthorization {
+    member?: IMember
+}
+
+export interface ProjectAuthorizationByTask extends ProjectAuthorization {
+    task?: ITask
 }

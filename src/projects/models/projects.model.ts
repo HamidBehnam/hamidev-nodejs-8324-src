@@ -1,13 +1,15 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
+import {WorkStatus} from "../../common/services/types.service";
 
 export interface IProject extends Document {
     title: string;
     description: string;
     status: string;
     createdBy: string;
-    creatorProfile: string;
+    creatorProfile: Types.ObjectId;
     //members type could be IMember[] or Types.ObjectId[] depending on if it's populated or not
     members: any[];
+    tasks: any[];
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -21,6 +23,15 @@ const ProjectSchema: Schema = new Schema({
     },
     status: {
         type: String,
+        enum: [
+            WorkStatus.NotStarted,
+            WorkStatus.InProgress,
+            WorkStatus.Done,
+            WorkStatus.QA,
+            WorkStatus.UAT,
+            WorkStatus.MoreWorkIsNeeded,
+            WorkStatus.Accepted
+        ],
         required: true
     },
     createdBy: {
@@ -28,13 +39,20 @@ const ProjectSchema: Schema = new Schema({
         required: true
     },
     creatorProfile: {
-        type: String,
+        type: Types.ObjectId,
+        ref: 'Profile',
         required: true
     },
     members: {
         type: [{
             type: Types.ObjectId,
             ref: 'Member'
+        }]
+    },
+    tasks: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Task'
         }]
     }
 }, {

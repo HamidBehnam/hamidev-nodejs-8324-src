@@ -8,6 +8,7 @@ export const membersRoutesConfig = (): Router => {
 
     membersRouter.post('/members', [
         authMiddleware.checkJwt,
+        fieldsMiddleware.disallow(['userId']),
         membersController.createMember
     ]);
 

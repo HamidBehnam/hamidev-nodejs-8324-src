@@ -1,6 +1,7 @@
 import {Router} from "express";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {profilesController} from "./controllers/profiles.controller";
+import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
 
 export const profilesRoutesConfig = (): Router => {
 
@@ -8,6 +9,7 @@ export const profilesRoutesConfig = (): Router => {
 
     profileRouter.post('/profiles', [
         authMiddleware.checkJwt,
+        fieldsMiddleware.disallow(['userId']),
         profilesController.createProfile
     ]);
 

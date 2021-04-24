@@ -40,6 +40,18 @@ class MembersController {
                 return response.status(400).send('profile or project does not exist');
             }
 
+            if (request.body.role === ProjectOperationRole.Creator) {
+                if (request.body.profile !== project.creatorProfile.toString()) {
+                    return response.status(400).send('creator role can be assigned only to the project creator');
+                }
+            }
+
+            if (request.body.profile === project.creatorProfile.toString()) {
+                if ( request.body.role !== ProjectOperationRole.Creator) {
+                    return response.status(400).send("if the project creator is going to be added as a member, they should have a creator role");
+                }
+            }
+
             const memberData = {
                 ...request.body,
                 userId: profile.userId

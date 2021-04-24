@@ -28,7 +28,8 @@ const MemberSchema: Schema = new Schema({
         enum: [
             ProjectOperationRole.Viewer,
             ProjectOperationRole.Developer,
-            ProjectOperationRole.Admin
+            ProjectOperationRole.Admin,
+            ProjectOperationRole.Creator
         ],
         required: true
     }

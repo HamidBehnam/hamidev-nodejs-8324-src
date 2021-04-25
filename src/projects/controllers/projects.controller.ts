@@ -6,6 +6,7 @@ import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
 import {Member} from "../../members/models/members.model";
 import {winstonService} from "../../common/services/winston.service";
+import {projectsQueryService} from "../services/projects-query.service";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -38,34 +39,42 @@ class ProjectsController {
     async getProjects(request: Auth0Request, response: Response) {
         try {
 
-            const projects = await Project.find({}).populate([{
-                path: 'creatorProfile',
-                model: 'Profile',
-                select: '-__v'
-            },{
-                path: 'members',
-                model: 'Member',
-                populate: [{
-                    path: 'profile',
-                    model: 'Profile',
-                    select: '-__v'
-                }],
-                select: '-__v -project'
-            }, {
-                path: 'tasks',
-                model: 'Task',
-                select: '-__v',
-                populate: [{
-                    path: 'owner',
-                    model: 'Member',
-                    select: 'profile',
-                    populate: [{
-                        path: 'profile',
+            const queryParams = projectsQueryService.getProjectsQueryParams(request.query);
+
+            const projects = await Project.find({})
+                .limit(queryParams.limit)
+                .skip(--queryParams.page * queryParams.limit)
+                .sort(queryParams.sort)
+                .populate([
+                    {
+                        path: 'creatorProfile',
                         model: 'Profile',
                         select: '-__v'
-                    }]
-                }]
-            }]);
+                    },{
+                        path: 'members',
+                        model: 'Member',
+                        populate: [{
+                            path: 'profile',
+                            model: 'Profile',
+                            select: '-__v'
+                        }],
+                        select: '-__v -project'
+                    }, {
+                        path: 'tasks',
+                        model: 'Task',
+                        select: '-__v',
+                        populate: [{
+                            path: 'owner',
+                            model: 'Member',
+                            select: 'profile',
+                            populate: [{
+                                path: 'profile',
+                                model: 'Profile',
+                                select: '-__v'
+                            }]
+                        }]
+                    }
+                ]);
 
             sendgridService
                 .sendEmail(

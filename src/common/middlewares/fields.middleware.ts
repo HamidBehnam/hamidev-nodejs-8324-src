@@ -24,7 +24,7 @@ class FieldsMiddleware {
         };
     }
 
-    validate(schema: Joi.Schema, dataSource?: ValidationDataSource) {
+    validate(schema: Joi.Schema, dataSource?: ValidationDataSource, stripUnknown = true) {
         return (request: Auth0Request, response: Response, next: NextFunction) => {
             let validationDataSource;
 
@@ -42,7 +42,8 @@ class FieldsMiddleware {
             }
 
             const validationResult: ValidationResult = schema.validate(validationDataSource, {
-                stripUnknown: true
+                // stringUnknown: false, will only let params which are in the schema be in the query parameters
+                stripUnknown
             });
 
             if (validationResult.error) {

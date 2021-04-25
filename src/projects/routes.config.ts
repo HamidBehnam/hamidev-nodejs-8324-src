@@ -2,6 +2,8 @@ import {Router} from "express";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {projectsController} from "./controllers/projects.controller";
 import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
+import {projectsJoiService} from "./services/projects-joi.service";
+import {ValidationDataSource} from "../common/services/types.service";
 
 export const projectsRoutesConfig = (): Router => {
     const projectsRouter = Router();
@@ -16,6 +18,7 @@ export const projectsRoutesConfig = (): Router => {
 
     projectsRouter.get('/projects', [
         authMiddleware.checkJwt,
+        fieldsMiddleware.validate(projectsJoiService.getProjectsSchema, ValidationDataSource.Query),
         projectsController.getProjects
     ]);
 

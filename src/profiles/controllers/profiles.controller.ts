@@ -4,6 +4,7 @@ import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
 import {Email} from "../../emails/models/emails.model";
 import {configService} from "../../common/services/config.service";
+import {profilesQueryService} from "../services/profiles-query.service";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -56,7 +57,12 @@ class ProfilesController {
     async getProfiles(request: Auth0Request, response: Response) {
         try {
 
-            const profiles = await Profile.find({}).select(profilesProjection);
+            const queryParams = profilesQueryService.getProfilesQueryParams(request.query);
+
+            const profiles = await Profile.find({})
+                .limit(queryParams.limit)
+                .skip(--queryParams.page * queryParams.limit)
+                .select(profilesProjection);
 
             response.status(200).send(profiles);
         } catch (error) {

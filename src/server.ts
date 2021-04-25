@@ -9,6 +9,7 @@ import {usersRoutesConfig} from "./users/routes.config";
 import {membersRoutesConfig} from "./members/routes.config";
 import {tasksRoutesConfig} from "./tasks/routes.config";
 import {morganMiddleware} from "./common/middlewares/morgan.middleware";
+import {winstonService} from "./common/services/winston.service";
 
 dbService.connectDB();
 
@@ -17,7 +18,8 @@ const main: Application = express();
 
 // https://stackoverflow.com/a/51844327/2281403
 app.use(express.json());
-app.use(express.urlencoded());
+// https://stackoverflow.com/a/25471936/2281403
+app.use(express.urlencoded({ extended: true }));
 app.use(morganMiddleware.morgan);
 app.use(profilesRoutesConfig());
 app.use(projectsRoutesConfig());
@@ -31,5 +33,5 @@ main.use('/api/v1', app);
 const server = http.createServer(main);
 
 server.listen(configService.port, () => {
-    return console.log(`server is listening on ${configService.port}`);
+    return winstonService.Logger.info(`server is listening on ${configService.port}`);
 });

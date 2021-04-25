@@ -1,13 +1,14 @@
 import fs from "fs";
 import dotenv from "dotenv";
 import path = require('path');
+import {winstonService} from "./winston.service";
 
 const envPath = path.resolve(__dirname, '../.env');
 // the alternative path is added to cover the cases where I need to compile using
 // tsc compiler locally and for debugging purposes
 const envPathAlternative = path.resolve(__dirname, '../../../.env');
 if (fs.existsSync(envPath) || fs.existsSync(envPathAlternative)) {
-    console.log("Using .env file to supply config environment variables");
+    winstonService.Logger.info("Using .env file to provide config environment variables");
     dotenv.config({ path: fs.existsSync(envPath) ? envPath : envPathAlternative });
 } else {
     throw new Error('please provide the .env file.');

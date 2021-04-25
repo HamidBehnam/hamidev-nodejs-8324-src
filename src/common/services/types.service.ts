@@ -12,6 +12,12 @@ export interface Auth0MetaData {
     app_metadata?: object;
 }
 
+export enum ValidationDataSource {
+    Query,
+    Headers,
+    Body
+}
+
 export enum Auth0Permissions {
     ReadAuth0Users = 'read:auth0_users',
     ReadAuth0UserRoles = 'read:auth0_user_roles',

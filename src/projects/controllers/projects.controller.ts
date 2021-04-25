@@ -5,6 +5,7 @@ import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
 import {Member} from "../../members/models/members.model";
+import {winstonService} from "../../common/services/winston.service";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -72,8 +73,8 @@ class ProjectsController {
                     {email: "info@hamidbehnam.com", name: "Project Management App"},
                     "d-bb86afa964f741f88da1c473b3382fe2"
                 )
-                .then(() => console.log('Email sent'))
-                .catch(error => console.log(error));
+                .then(() => winstonService.Logger.info('Email sent'))
+                .catch(error => winstonService.Logger.error(error));
 
             response.status(200).send(projects);
         } catch (error) {

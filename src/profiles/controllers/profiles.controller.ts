@@ -62,6 +62,7 @@ class ProfilesController {
             const profiles = await Profile.find({})
                 .limit(queryParams.limit)
                 .skip(--queryParams.page * queryParams.limit)
+                .sort(queryParams.sort)
                 .select(profilesProjection);
 
             response.status(200).send(profiles);

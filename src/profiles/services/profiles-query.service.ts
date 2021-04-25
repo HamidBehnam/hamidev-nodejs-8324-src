@@ -1,7 +1,8 @@
 class ProfilesQueryService {
     private readonly getProfilesQueryParamsDefaults = {
         limit: 10,
-        page: 1
+        page: 1,
+        sort: 'createdAt'
     };
 
     getProfilesQueryParams(queryParams: any) {

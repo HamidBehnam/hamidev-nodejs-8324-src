@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
 import {configService} from "./config.service";
 import {winstonService} from "./winston.service";
-import {GridFSBucket} from "mongodb";
+import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
-import {FileCategory, CustomError} from "./types.service";
+import {FileCategory, CustomError, FileOptions} from "./types.service";
 import {Readable} from "stream";
 
 class DbService {
@@ -35,10 +35,15 @@ class DbService {
         });
     }
 
-    saveFile(fileCategory: FileCategory, file: Express.Multer.File, fileName?: string) {
-        const selectedFileName = fileName || file.originalname;
-        const uploadStream = this.getGridFSBucket(fileCategory).openUploadStream(selectedFileName);
+    saveFile(fileCategory: FileCategory, file: Express.Multer.File, fileOptions: FileOptions = {}) {
+        const selectedFileName = fileOptions.filename || file.originalname;
+
+        const gridFSBucketOpenUploadStreamOptions: GridFSBucketOpenUploadStreamOptions =
+            fileOptions.gridFSBucketOpenUploadStreamOptions || {};
+
+        const uploadStream = this.getGridFSBucket(fileCategory).openUploadStream(selectedFileName, gridFSBucketOpenUploadStreamOptions);
         const readableStream = new Readable();
+
         readableStream.push(file.buffer);
         readableStream.push(null);
         readableStream.pipe(uploadStream);

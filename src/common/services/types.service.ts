@@ -2,6 +2,7 @@ import {Request} from "express";
 import {IProject} from "../../projects/models/projects.model";
 import {IMember} from "../../members/models/members.model";
 import {ITask} from "../../tasks/models/tasks.model";
+import {GridFSBucketOpenUploadStreamOptions} from "mongodb";
 
 export interface Auth0Request extends Request {
     user?: any;
@@ -60,7 +61,7 @@ export enum WorkStatus {
 }
 
 export enum FileCategory {
-    Avatars = 'avatars',
+    Pictures = 'pictures',
     Attachments = 'attachments'
 }
 
@@ -75,4 +76,9 @@ export interface ProjectAuthorizationByMember extends ProjectAuthorization {
 
 export interface ProjectAuthorizationByTask extends ProjectAuthorization {
     task?: ITask
+}
+
+export interface FileOptions {
+    filename?: string;
+    gridFSBucketOpenUploadStreamOptions?: GridFSBucketOpenUploadStreamOptions;
 }

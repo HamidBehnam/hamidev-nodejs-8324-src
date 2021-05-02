@@ -2,7 +2,7 @@ import {Response} from "express";
 import {Project} from "../models/projects.model";
 import {
     Auth0Request,
-    FileCategory,
+    FileCategory, FileOptions,
     ProjectAuthorization,
     ProjectOperationRole
 } from "../../common/services/types.service";
@@ -18,7 +18,7 @@ import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
 
-        multerMiddleware.attachmentMulter('attachment')(request, response, async (error: any) => {
+        multerMiddleware.pictureMulter('picture')(request, response, async (error: any) => {
             try {
 
                 if (error) {
@@ -42,7 +42,15 @@ class ProjectsController {
 
                 await project.populate('creatorProfile', '-__v').execPopulate();
 
-                dbService.saveFile(FileCategory.Attachments, request.file);
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            project: project._id
+                        }
+                    }
+                };
+
+                dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
 
                 response.status(201).send(project);
             } catch (error) {

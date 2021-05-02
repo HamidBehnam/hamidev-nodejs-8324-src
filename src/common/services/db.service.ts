@@ -3,7 +3,7 @@ import {configService} from "./config.service";
 import {winstonService} from "./winston.service";
 import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
-import {FileCategory, CustomError, FileOptions} from "./types.service";
+import {FileCategory, CustomError, FileOptions, FileStream} from "./types.service";
 import {Readable} from "stream";
 
 class DbService {
@@ -49,7 +49,7 @@ class DbService {
         readableStream.pipe(uploadStream);
     }
 
-    async getFileStream(fileCategory: FileCategory, fileId: string) {
+    async getFileStream(fileCategory: FileCategory, fileId: string): Promise<FileStream> {
         const foundFiles = await this.getGridFSBucket(fileCategory).find({
             _id: mongoose.Types.ObjectId(fileId)
         }).toArray();

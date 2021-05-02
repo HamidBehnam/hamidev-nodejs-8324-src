@@ -2,7 +2,7 @@ import {Response} from "express";
 import {Project} from "../models/projects.model";
 import {
     Auth0Request,
-    FileCategory, FileOptions,
+    FileCategory, FileOptions, FileStream,
     ProjectAuthorization,
     ProjectOperationRole
 } from "../../common/services/types.service";
@@ -17,47 +17,30 @@ import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
+        try {
 
-        multerMiddleware.pictureMulter('picture')(request, response, async (error: any) => {
-            try {
+            const creatorProfile = await Profile.findById(request.body.creatorProfile);
 
-                if (error) {
-                    return response.status(400).send(error);
-                }
-
-                const creatorProfile = await Profile.findById(request.body.creatorProfile);
-
-                if (!creatorProfile) {
-                    return response.status(400).send('creator profile does not exist');
-                } else if (creatorProfile.userId !== request.user.sub) {
-                    return response.status(400).send('provided profile does not belong to the user');
-                }
-
-                const projectData = {
-                    ...request.body,
-                    createdBy: request.user.sub
-                };
-
-                const project = await Project.create(projectData);
-
-                await project.populate('creatorProfile', '-__v').execPopulate();
-
-                const fileOptions: FileOptions = {
-                    gridFSBucketOpenUploadStreamOptions: {
-                        metadata: {
-                            project: project._id
-                        }
-                    }
-                };
-
-                dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
-
-                response.status(201).send(project);
-            } catch (error) {
-
-                response.status(500).send(error);
+            if (!creatorProfile) {
+                return response.status(400).send('creator profile does not exist');
+            } else if (creatorProfile.userId !== request.user.sub) {
+                return response.status(400).send('provided profile does not belong to the user');
             }
-        });
+
+            const projectData = {
+                ...request.body,
+                createdBy: request.user.sub
+            };
+
+            const project = await Project.create(projectData);
+
+            await project.populate('creatorProfile', '-__v').execPopulate();
+
+            response.status(201).send(project);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
     }
 
     async getProjects(request: Auth0Request, response: Response) {
@@ -192,10 +175,71 @@ class ProjectsController {
         }
     }
 
-    async getAttachment(request: Auth0Request, response: Response) {
+    async uploadProjectPicture(request: Auth0Request, response: Response) {
+
+        multerMiddleware.pictureMulter('picture')(request, response, async (error: any) => {
+            try {
+
+                if (error) {
+                    return response.status(400).send(error);
+                }
+
+                if (!request.file) {
+                    return response.status(400).send('file is not sent');
+                }
+
+                const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                    request.user.sub,
+                    request.params.id,
+                    ProjectOperationRole.Admin
+                );
+
+                if (!projectAuthorization.isAuthorized) {
+                    return response.status(401).send('permission denied, please contact the project admin');
+                }
+
+                if (!projectAuthorization.project) {
+                    return response.status(400).send('project does not exist');
+                }
+
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            project: projectAuthorization.project._id
+                        }
+                    }
+                };
+
+                dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
+
+                response.status(201).send('project picture was successfully uploaded');
+            } catch (error) {
+
+                response.status(500).send(error);
+            }
+        });
+    }
+
+    async getProjectPicture(request: Auth0Request, response: Response) {
         try {
 
-            const fileStream = await dbService.getFileStream(FileCategory.Attachments, request.params.fileId);
+            // loading the project data before loading its file is not needed atm but the project id
+            // will be in request.params.id
+            const fileStream: FileStream = await dbService.getFileStream(FileCategory.Pictures, request.params.fileId);
+            response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
+            fileStream.stream.pipe(response);
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
+
+    async getProjectAttachment(request: Auth0Request, response: Response) {
+        try {
+
+            // loading the project data before loading its file is not needed atm but the project id
+            // will be in request.params.id
+            const fileStream: FileStream = await dbService.getFileStream(FileCategory.Attachments, request.params.fileId);
             response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
             fileStream.stream.pipe(response);
         } catch (error) {

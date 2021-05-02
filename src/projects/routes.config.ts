@@ -40,9 +40,19 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.deleteProject
     ]);
 
+    projectsRouter.post('/projects/:id/pictures', [
+        authMiddleware.checkJwt,
+        projectsController.uploadProjectPicture
+    ]);
+
+    projectsRouter.get('/projects/:id/pictures/:fileId', [
+        authMiddleware.checkJwt,
+        projectsController.getProjectPicture
+    ]);
+
     projectsRouter.get('/projects/:id/attachments/:fileId', [
         authMiddleware.checkJwt,
-        projectsController.getAttachment
+        projectsController.getProjectAttachment
     ]);
 
     return projectsRouter;

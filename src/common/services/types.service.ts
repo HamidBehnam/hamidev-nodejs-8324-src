@@ -12,6 +12,20 @@ export interface Auth0MetaData {
     app_metadata?: object;
 }
 
+// the reason for adding the CustomError type is because express doesn't send the error object of the errors with the
+// type of "Error" properly. For instance if you throw new Error('error') and try to send it to client using:
+// response.send(error), an empty error message will be sent to the client.
+export class CustomError extends Error {
+    error: string;
+
+    constructor(message: string) {
+        super(message);
+        this.name = 'CustomError';
+        this.error = message;
+        Error.captureStackTrace(this, CustomError)
+    }
+}
+
 export enum ValidationDataSource {
     Query,
     Headers,
@@ -43,6 +57,11 @@ export enum WorkStatus {
     UAT = 'uat',
     MoreWorkIsNeeded = 'more_work_is_needed',
     Accepted = 'accepted'
+}
+
+export enum FileCategory {
+    Avatars = 'avatars',
+    Attachments = 'attachments'
 }
 
 export interface ProjectAuthorization {

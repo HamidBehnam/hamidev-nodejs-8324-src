@@ -1,39 +1,55 @@
 import {Response} from "express";
 import {Project} from "../models/projects.model";
-import {Auth0Request, ProjectAuthorization, ProjectOperationRole} from "../../common/services/types.service";
+import {
+    Auth0Request,
+    FileCategory,
+    ProjectAuthorization,
+    ProjectOperationRole
+} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
 import {Member} from "../../members/models/members.model";
 import {winstonService} from "../../common/services/winston.service";
 import {projectsQueryService} from "../services/projects-query.service";
+import {dbService} from "../../common/services/db.service";
+import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
-        try {
 
-            const creatorProfile = await Profile.findById(request.body.creatorProfile);
+        multerMiddleware.attachmentMulter('attachment')(request, response, async (error: any) => {
+            try {
 
-            if (!creatorProfile) {
-                return response.status(400).send('creator profile does not exist');
-            } else if (creatorProfile.userId !== request.user.sub) {
-                return response.status(400).send('provided profile does not belong to the user');
+                if (error) {
+                    return response.status(400).send(error);
+                }
+
+                const creatorProfile = await Profile.findById(request.body.creatorProfile);
+
+                if (!creatorProfile) {
+                    return response.status(400).send('creator profile does not exist');
+                } else if (creatorProfile.userId !== request.user.sub) {
+                    return response.status(400).send('provided profile does not belong to the user');
+                }
+
+                const projectData = {
+                    ...request.body,
+                    createdBy: request.user.sub
+                };
+
+                const project = await Project.create(projectData);
+
+                await project.populate('creatorProfile', '-__v').execPopulate();
+
+                dbService.saveFile(FileCategory.Attachments, request.file);
+
+                response.status(201).send(project);
+            } catch (error) {
+
+                response.status(500).send(error);
             }
-
-            const projectData = {
-                ...request.body,
-                createdBy: request.user.sub
-            };
-
-            const project = await Project.create(projectData);
-
-            await project.populate('creatorProfile', '-__v').execPopulate();
-
-            response.status(201).send(project);
-        } catch (error) {
-
-            response.status(500).send(error);
-        }
+        });
     }
 
     async getProjects(request: Auth0Request, response: Response) {
@@ -162,6 +178,18 @@ class ProjectsController {
             await projectAuthorization.project.deleteOne();
 
             response.status(200).send('project was successfully deleted');
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
+    }
+
+    async getAttachment(request: Auth0Request, response: Response) {
+        try {
+
+            const fileStream = await dbService.getFileStream(FileCategory.Attachments, request.params.fileId);
+            response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
+            fileStream.stream.pipe(response);
         } catch (error) {
 
             response.status(500).send(error);

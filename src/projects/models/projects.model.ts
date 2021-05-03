@@ -1,32 +1,74 @@
-import {Document, model, Model, Schema} from "mongoose";
+import {Document, model, Model, Schema, Types} from "mongoose";
+import {WorkStatus} from "../../common/services/types.service";
 
 export interface IProject extends Document {
-    projectName: string;
-    projectCode: string;
-    projectStatus: string;
+    title: string;
+    description: string;
+    status: string;
+    createdBy: string;
+    creatorProfile: Types.ObjectId;
+    //members type could be IMember[] or Types.ObjectId[] depending on if it's populated or not
+    members: any[];
+    tasks: any[];
+    image: any;
 }
 
-const ProjectSchema: Schema = new Schema<any>({
-    projectName: {
+const ProjectSchema: Schema = new Schema({
+    title: {
         type: String,
         required: true
     },
-    projectCode: {
+    description: {
         type: String,
         required: true
     },
-    projectStatus: {
+    status: {
+        type: String,
+        enum: [
+            WorkStatus.NotStarted,
+            WorkStatus.InProgress,
+            WorkStatus.Done,
+            WorkStatus.QA,
+            WorkStatus.UAT,
+            WorkStatus.MoreWorkIsNeeded,
+            WorkStatus.Accepted
+        ],
+        required: true
+    },
+    createdBy: {
         type: String,
         required: true
+    },
+    creatorProfile: {
+        type: Types.ObjectId,
+        ref: 'Profile',
+        required: true
+    },
+    members: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Member'
+        }]
+    },
+    tasks: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Task'
+        }]
+    },
+    image: {
+        type: Types.ObjectId,
+        ref: 'Image'
     }
 }, {
     toJSON: {
         virtuals: true
-    }
+    },
+    timestamps: true
 });
 
-ProjectSchema.virtual("projectNameCode").get(function (this: any) {
-    return `${this.projectName} - ${this.projectCode}`;
+ProjectSchema.virtual("titleStatus").get(function (this: IProject) {
+    return `${this.title} - ${this.status}`;
 });
 
 export const Project: Model<IProject> = model('Project', ProjectSchema);

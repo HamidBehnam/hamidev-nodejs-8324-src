@@ -16,6 +16,7 @@ class DbService {
     }
 
     connectDB() {
+
         if (this.mongooseInstance) {
             throw new CustomError('multiple database initializations')
         }
@@ -28,7 +29,7 @@ class DbService {
         mongoose.connect(configService.mongodb_uri, dbOptions)
             .then((mongooseInstance) => {
                 this.mongooseInstance = mongooseInstance;
-                gridFSModelBuilder.enable();
+                gridFSModelBuilder.run();
                 winstonService.Logger.info("successfully connected to the DB");
             }).catch(error => {
             winstonService.Logger.info("unable to connect to the DB", error);
@@ -37,7 +38,10 @@ class DbService {
         });
     }
 
-    saveFile(fileCategory: FileCategory, file: Express.Multer.File, fileOptions: FileOptions = {}): Promise<FileUploadResult> {
+    saveFile(fileCategory: FileCategory,
+             file: Express.Multer.File,
+             fileOptions: FileOptions = {}): Promise<FileUploadResult> {
+
         return new Promise<FileUploadResult>((resolve, reject) => {
 
             const selectedFileName = fileOptions.filename || file.originalname;
@@ -61,6 +65,7 @@ class DbService {
     }
 
     async getFileStream(fileCategory: FileCategory, fileId: string): Promise<FileStream> {
+
         const foundFiles = await this.getGridFSBucket(fileCategory).find({
             _id: mongoose.Types.ObjectId(fileId)
         }).toArray();
@@ -76,6 +81,7 @@ class DbService {
     }
 
     private getGridFSBucket(fileCategory: FileCategory): GridFSBucket {
+
         let bucket;
 
         if (this.gridFSBuckets.has(fileCategory)) {
@@ -97,6 +103,7 @@ class DbService {
     }
 
     private static createGridFSBucket(mongooseInstance: mongoose.Mongoose, bucketName: string): GridFSBucket {
+
         return new mongooseInstance.mongo.GridFSBucket(mongooseInstance.connection.db, {
             bucketName
         });

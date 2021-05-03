@@ -74,7 +74,7 @@ class GridFSModelBuilder {
         })
     }
 
-    enable(): void {
+    run(): void {
         // doesn't do anything, since the models here are not gonna be used (and imported) like any other mongoose
         // models this function is just to make sure the module is imported and the models are created.
     }

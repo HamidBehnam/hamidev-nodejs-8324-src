@@ -12,7 +12,7 @@ export const projectsRoutesConfig = (): Router => {
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
         // created through their own endpoints so data will be in sync with the members and tasks collections
-        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy']),
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'picture']),
         projectsController.createProject
     ]);
 
@@ -31,7 +31,7 @@ export const projectsRoutesConfig = (): Router => {
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
         // created through their own endpoints so data will be in sync with the members and tasks collections
-        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'creatorProfile']),
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'creatorProfile', 'picture']),
         projectsController.updateProject
     ]);
 

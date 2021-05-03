@@ -2,7 +2,7 @@ import {Response} from "express";
 import {Project} from "../models/projects.model";
 import {
     Auth0Request,
-    FileCategory, FileOptions, FileStream,
+    FileCategory, FileOptions, FileStream, FileUploadResult,
     ProjectAuthorization,
     ProjectOperationRole
 } from "../../common/services/types.service";
@@ -80,6 +80,10 @@ class ProjectsController {
                                 select: '-__v'
                             }]
                         }]
+                    }, {
+                        path: 'picture',
+                        model: 'Picture',
+                        select: '-__v'
                     }
                 ]);
 
@@ -210,7 +214,12 @@ class ProjectsController {
                     }
                 };
 
-                dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
+                const fileUploadResult: FileUploadResult =
+                    await dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
+
+                await projectAuthorization.project.updateOne({
+                    picture: fileUploadResult.id
+                });
 
                 response.status(201).send('project picture was successfully uploaded');
             } catch (error) {

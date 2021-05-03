@@ -87,3 +87,8 @@ export interface FileStream {
     file: any;
     stream: GridFSBucketReadStream;
 }
+
+export interface FileUploadResult {
+    id: string;
+    message: string;
+}

@@ -3,8 +3,9 @@ import {configService} from "./config.service";
 import {winstonService} from "./winston.service";
 import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
-import {FileCategory, CustomError, FileOptions, FileStream} from "./types.service";
+import {FileCategory, CustomError, FileOptions, FileStream, FileUploadResult} from "./types.service";
 import {Readable} from "stream";
+import {gridFSModelBuilder} from "./gridfs-model-builder.service";
 
 class DbService {
     private mongooseInstance: mongoose.Mongoose | null;
@@ -27,6 +28,7 @@ class DbService {
         mongoose.connect(configService.mongodb_uri, dbOptions)
             .then((mongooseInstance) => {
                 this.mongooseInstance = mongooseInstance;
+                gridFSModelBuilder.enable();
                 winstonService.Logger.info("successfully connected to the DB");
             }).catch(error => {
             winstonService.Logger.info("unable to connect to the DB", error);
@@ -35,18 +37,27 @@ class DbService {
         });
     }
 
-    saveFile(fileCategory: FileCategory, file: Express.Multer.File, fileOptions: FileOptions = {}) {
-        const selectedFileName = fileOptions.filename || file.originalname;
+    saveFile(fileCategory: FileCategory, file: Express.Multer.File, fileOptions: FileOptions = {}): Promise<FileUploadResult> {
+        return new Promise<FileUploadResult>((resolve, reject) => {
 
-        const gridFSBucketOpenUploadStreamOptions: GridFSBucketOpenUploadStreamOptions =
-            fileOptions.gridFSBucketOpenUploadStreamOptions || {};
+            const selectedFileName = fileOptions.filename || file.originalname;
 
-        const uploadStream = this.getGridFSBucket(fileCategory).openUploadStream(selectedFileName, gridFSBucketOpenUploadStreamOptions);
-        const readableStream = new Readable();
+            const gridFSBucketOpenUploadStreamOptions: GridFSBucketOpenUploadStreamOptions =
+                fileOptions.gridFSBucketOpenUploadStreamOptions || {};
 
-        readableStream.push(file.buffer);
-        readableStream.push(null);
-        readableStream.pipe(uploadStream);
+            const uploadStream = this.getGridFSBucket(fileCategory).openUploadStream(selectedFileName, gridFSBucketOpenUploadStreamOptions);
+            const readableStream = new Readable();
+
+            readableStream.push(file.buffer);
+            readableStream.push(null);
+            readableStream.pipe(uploadStream);
+
+            uploadStream.on('error', () => reject('error in uploading the file to database'));
+            uploadStream.on('finish', () => resolve({
+                id: uploadStream.id.toString(),
+                message: 'file was successfully uploaded'
+            }));
+        });
     }
 
     async getFileStream(fileCategory: FileCategory, fileId: string): Promise<FileStream> {

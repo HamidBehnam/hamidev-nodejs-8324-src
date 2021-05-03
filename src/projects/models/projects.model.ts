@@ -10,6 +10,7 @@ export interface IProject extends Document {
     //members type could be IMember[] or Types.ObjectId[] depending on if it's populated or not
     members: any[];
     tasks: any[];
+    picture: any;
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -54,6 +55,10 @@ const ProjectSchema: Schema = new Schema({
             type: Types.ObjectId,
             ref: 'Task'
         }]
+    },
+    picture: {
+        type: Types.ObjectId,
+        ref: 'Picture'
     }
 }, {
     toJSON: {

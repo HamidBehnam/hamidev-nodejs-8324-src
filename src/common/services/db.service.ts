@@ -64,6 +64,20 @@ class DbService {
         });
     }
 
+    deleteFile(fileCategory: FileCategory, fileId: string): Promise<void> {
+
+        return new Promise<void>((resolve, reject) => {
+
+            this.getGridFSBucket(fileCategory).delete(mongoose.Types.ObjectId(fileId), (error) => {
+                if (error) {
+                    reject(error.message);
+                }
+
+                resolve();
+            });
+        });
+    }
+
     async getFileStream(fileCategory: FileCategory, fileId: string): Promise<FileStream> {
 
         const foundFiles = await this.getGridFSBucket(fileCategory).find({

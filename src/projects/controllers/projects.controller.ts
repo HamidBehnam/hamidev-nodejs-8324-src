@@ -2,7 +2,10 @@ import {Response} from "express";
 import {Project} from "../models/projects.model";
 import {
     Auth0Request,
-    FileCategory, FileOptions, FileStream, FileUploadResult,
+    FileCategory,
+    FileOptions,
+    FileStream,
+    FileUploadResult,
     ProjectAuthorization,
     ProjectOperationRole
 } from "../../common/services/types.service";
@@ -217,9 +220,16 @@ class ProjectsController {
                 const fileUploadResult: FileUploadResult =
                     await dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
 
+                const oldPictureId = projectAuthorization.project.picture;
+
                 await projectAuthorization.project.updateOne({
                     picture: fileUploadResult.id
                 });
+
+                if (oldPictureId) {
+
+                    await dbService.deleteFile(FileCategory.Pictures, oldPictureId);
+                }
 
                 response.status(201).send('project picture was successfully uploaded');
             } catch (error) {
@@ -227,6 +237,37 @@ class ProjectsController {
                 response.status(500).send(error);
             }
         });
+    }
+
+    async deleteProjectPicture(request: Auth0Request, response: Response) {
+
+        try {
+
+            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
+
+            if (!projectAuthorization.isAuthorized) {
+                return response.status(401).send('permission denied, please contact the project admin');
+            }
+
+            if (!projectAuthorization.project) {
+                return response.status(400).send('project does not exist');
+            }
+
+            await dbService.deleteFile(FileCategory.Pictures, request.params.fileId);
+
+            await projectAuthorization.project.updateOne({
+                picture: undefined
+            });
+
+            response.status(201).send('project picture was successfully removed');
+        } catch (error) {
+
+            response.status(500).send(error);
+        }
     }
 
     async getProjectPicture(request: Auth0Request, response: Response) {

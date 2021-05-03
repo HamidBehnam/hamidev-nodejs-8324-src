@@ -8,7 +8,7 @@ interface IProfile extends Document{
     description: string;
 }
 
-const ProfileSchema: Schema = new Schema<any>({
+const ProfileSchema: Schema = new Schema({
     userId: {
         type: String,
         required: true
@@ -29,16 +29,18 @@ const ProfileSchema: Schema = new Schema<any>({
     toJSON: {
         virtuals: true
     },
+    timestamps: true,
     id: false
 });
 
 export const profilesProjection = {
+    userId: true,
     lastName: true,
     firstName: true,
     fullName: true
 };
 
-ProfileSchema.virtual('fullName').get(function (this: any) {
+ProfileSchema.virtual('fullName').get(function (this: IProfile) {
     return `${this.firstName} ${this.lastName}`;
 });
 

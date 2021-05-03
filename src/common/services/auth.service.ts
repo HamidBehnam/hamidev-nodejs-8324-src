@@ -1,49 +1,54 @@
-import jwt from "express-jwt";
-import JwksRsa from "jwks-rsa";
 import jwt_decode from "jwt-decode";
 import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
 import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
+import {promises as fsPromises, constants as fsConstants} from "fs";
+import {winstonService} from "./winston.service";
+import * as path from "path";
 
 class AuthService {
-    private readonly _jwtCheck: jwt.RequestHandler;
     private machineToMachineAccessToken = '';
-
-    constructor() {
-        this._jwtCheck = jwt({
-            secret: JwksRsa.expressJwtSecret({
-                cache: true,
-                rateLimit: true,
-                jwksRequestsPerMinute: 5,
-                jwksUri: `https://${configService.auth0_domain}/.well-known/jwks.json`
-            }),
-            audience: configService.auth0_audience,
-            issuer: `https://${configService.auth0_domain}/`,
-            algorithms: ['RS256']
-        });
-    }
-
-    get jwtCheck(): jwt.RequestHandler {
-        return this._jwtCheck;
-    }
 
     private static checkTokenExpiration(decodedToken: any): boolean {
         return decodedToken.exp * 1000 > Date.now();
     }
 
-    private getMachineToMachineAccessToken(): Promise<string | AxiosError> {
-        return new Promise<string | AxiosError>((resolve, reject) => {
+    private async getMachineToMachineAccessToken(): Promise<string | AxiosError> {
 
-            if (this.machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(this.machineToMachineAccessToken))) {
+        if (this.machineToMachineAccessToken) {
+
+            winstonService.Logger.info('reading the m2m access token from the memory');
+            return this.tokenProvider(this.machineToMachineAccessToken);
+        } else {
+
+            try {
+                await fsPromises.access(path.resolve(__dirname, '../.m2m.cache'), fsConstants.F_OK);
+                try {
+                    winstonService.Logger.info('reading the m2m access token from the file');
+                    const m2mAccessTokenFile = await fsPromises.readFile(path.resolve(__dirname, '../.m2m.cache'));
+                    this.machineToMachineAccessToken = m2mAccessTokenFile.toString();
+                    return this.tokenProvider(this.machineToMachineAccessToken);
+                } catch (error) {
+
+                    return new Promise<string | AxiosError>((resolve, reject) => reject('was unable to ready the cache file'));
+                }
+            } catch {
+                return this.tokenProvider();
+            }
+        }
+
+    }
+
+    private tokenProvider(machineToMachineAccessToken?: string): Promise<string | AxiosError> {
+        return new Promise<string | AxiosError>((resolve, reject) => {
+            if (machineToMachineAccessToken && AuthService.checkTokenExpiration(jwt_decode(machineToMachineAccessToken))) {
 
                 // re using the cached token
-                resolve(this.machineToMachineAccessToken);
+                resolve(machineToMachineAccessToken);
             } else {
 
-                console.log('connecting to the auth0 server to get the token.............');
-
-
+                winstonService.Logger.info('loading the m2m access token from the management api');
                 const options: AxiosRequestConfig = {
                     method: 'POST',
                     url: `https://${configService.auth0_domain}/oauth/token`,
@@ -56,10 +61,17 @@ class AuthService {
                     }
                 };
 
-                axios.default.request(options).then((response: AxiosResponse) => {
+                axios.default.request(options).then(async (response: AxiosResponse) => {
 
                     this.machineToMachineAccessToken = response.data.access_token;
-                    resolve(this.machineToMachineAccessToken);
+
+                    try {
+                        winstonService.Logger.info('writing the m2m access token to the cache file');
+                        await fsPromises.writeFile(path.resolve(__dirname, '../.m2m.cache'), this.machineToMachineAccessToken);
+                        resolve(this.machineToMachineAccessToken);
+                    } catch (error) {
+                        reject('was unable to write into the cache file');
+                    }
                 }).catch((error: AxiosError) => {
 
                     reject(error);
@@ -79,6 +91,94 @@ class AuthService {
         };
 
         return axios.default.request(userPatchOptions);
+    }
+
+    async getUsers(): Promise<AxiosResponse | AxiosError> {
+
+        const token = await this.getMachineToMachineAccessToken();
+
+        const usersGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/users`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(usersGetOptions);
+    }
+
+    async getUser(userId: string): Promise<AxiosResponse | AxiosError> {
+
+        const token = await this.getMachineToMachineAccessToken();
+
+        const usersGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(usersGetOptions);
+    }
+
+    async getUserRoles(userId: string): Promise<AxiosResponse | AxiosError> {
+        const token = await this.getMachineToMachineAccessToken();
+
+        const userRolesGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}/roles`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(userRolesGetOptions);
+    }
+
+    async setUserRoles(userId: string, data: {roles: string[]}): Promise<AxiosResponse | AxiosError> {
+        const token = await this.getMachineToMachineAccessToken();
+
+        const userRolesGetOptions: AxiosRequestConfig = {
+            method: 'POST',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}/roles`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token},
+            data
+        };
+
+        return axios.default.request(userRolesGetOptions);
+    }
+
+    async deleteUserRoles(userId: string, data: {roles: string[]}): Promise<AxiosResponse | AxiosError> {
+        const token = await this.getMachineToMachineAccessToken();
+
+        const userRolesGetOptions: AxiosRequestConfig = {
+            method: 'DELETE',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}/roles`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token},
+            data
+        };
+
+        return axios.default.request(userRolesGetOptions);
+    }
+
+    async getUserPermissions(userId: string): Promise<AxiosResponse | AxiosError> {
+        const token = await this.getMachineToMachineAccessToken();
+
+        const userPermissionsGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/users/${userId}/permissions`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(userPermissionsGetOptions);
+    }
+
+    async getRoles(): Promise<AxiosResponse | AxiosError> {
+        const token = await this.getMachineToMachineAccessToken();
+
+        const rolesGetOptions: AxiosRequestConfig = {
+            method: 'GET',
+            url: `https://${configService.auth0_domain}/api/v2/roles`,
+            headers: {'content-type': 'application/json', 'authorization': 'Bearer ' + token}
+        };
+
+        return axios.default.request(rolesGetOptions);
     }
 }
 

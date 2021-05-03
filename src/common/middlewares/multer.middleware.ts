@@ -4,13 +4,13 @@ import {Auth0Request, CustomError} from "../services/types.service";
 class MulterMiddleware {
 
     private readonly storage;
-    private pictureMulterCore;
+    private imageMulterCore;
     private attachmentMulterCore;
 
     constructor() {
         this.storage = multer.memoryStorage();
 
-        this.pictureMulterCore = multer({
+        this.imageMulterCore = multer({
             storage: this.storage,
             limits: {
                 fileSize: 2000000
@@ -61,16 +61,16 @@ class MulterMiddleware {
         });
     }
 
-    pictureMulter(fieldName: string) {
-        return this.pictureMulterCore.single(fieldName);
+    imageMulter(fieldName: string) {
+        return this.imageMulterCore.single(fieldName);
     }
 
-    pictureMulterArray(fieldName: string, maxCount: number) {
-        return this.pictureMulterCore.array(fieldName, maxCount);
+    imageMulterArray(fieldName: string, maxCount: number) {
+        return this.imageMulterCore.array(fieldName, maxCount);
     }
 
-    pictureMulterFields(fields: any) {
-        return this.pictureMulterCore.fields(fields);
+    imageMulterFields(fields: any) {
+        return this.imageMulterCore.fields(fields);
     }
 
     attachmentMulter(fieldName: string) {

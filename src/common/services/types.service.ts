@@ -61,7 +61,7 @@ export enum WorkStatus {
 }
 
 export enum FileCategory {
-    Pictures = 'pictures',
+    Images = 'images',
     Attachments = 'attachments'
 }
 

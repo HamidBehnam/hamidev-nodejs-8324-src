@@ -16,7 +16,7 @@ class GridFSModelBuilder {
     // to create the documents through mongoose, GridFS needs to be handled directly by Mongo (or third party
     // libraries, which I haven't used in this app), at this time mongoose doesn't have a wrapper around Mongo's GridFS,
     // it's added here only to be able to "populate" the file metadata.
-    private picture: Model<IGridFSFile>;
+    private image: Model<IGridFSFile>;
     private attachment: Model<IGridFSFile>;
 
     // this is the schema for <bucketName>.files collection that mongo creates.
@@ -43,7 +43,7 @@ class GridFSModelBuilder {
 
     constructor() {
         this.makeSchemaReadonly();
-        this.picture = model('Picture', this.gridFSFileSchema, 'pictures.files');
+        this.image = model('Image', this.gridFSFileSchema, 'images.files');
         this.attachment = model('Attachment', this.gridFSFileSchema, 'attachments.files');
     }
 

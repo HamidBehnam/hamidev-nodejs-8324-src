@@ -12,7 +12,7 @@ export const projectsRoutesConfig = (): Router => {
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
         // created through their own endpoints so data will be in sync with the members and tasks collections
-        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'picture']),
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'image']),
         projectsController.createProject
     ]);
 
@@ -31,7 +31,7 @@ export const projectsRoutesConfig = (): Router => {
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
         // created through their own endpoints so data will be in sync with the members and tasks collections
-        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'creatorProfile', 'picture']),
+        fieldsMiddleware.disallow(['members', 'tasks', 'createdBy', 'creatorProfile', 'image']),
         projectsController.updateProject
     ]);
 
@@ -40,19 +40,19 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.deleteProject
     ]);
 
-    projectsRouter.post('/projects/:id/pictures', [
+    projectsRouter.post('/projects/:id/images', [
         authMiddleware.checkJwt,
-        projectsController.uploadProjectPicture
+        projectsController.uploadProjectImage
     ]);
 
-    projectsRouter.get('/projects/:id/pictures/:fileId', [
+    projectsRouter.get('/projects/:id/images/:fileId', [
         authMiddleware.checkJwt,
-        projectsController.getProjectPicture
+        projectsController.getProjectImage
     ]);
 
-    projectsRouter.delete('/projects/:id/pictures/:fileId', [
+    projectsRouter.delete('/projects/:id/images/:fileId', [
         authMiddleware.checkJwt,
-        projectsController.deleteProjectPicture
+        projectsController.deleteProjectImage
     ]);
 
     projectsRouter.get('/projects/:id/attachments/:fileId', [

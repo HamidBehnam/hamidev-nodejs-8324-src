@@ -84,8 +84,8 @@ class ProjectsController {
                             }]
                         }]
                     }, {
-                        path: 'picture',
-                        model: 'Picture',
+                        path: 'image',
+                        model: 'Image',
                         select: '-__v'
                     }
                 ]);
@@ -182,9 +182,9 @@ class ProjectsController {
         }
     }
 
-    async uploadProjectPicture(request: Auth0Request, response: Response) {
+    async uploadProjectImage(request: Auth0Request, response: Response) {
 
-        multerMiddleware.pictureMulter('picture')(request, response, async (error: any) => {
+        multerMiddleware.imageMulter('image')(request, response, async (error: any) => {
             try {
 
                 if (error) {
@@ -218,20 +218,20 @@ class ProjectsController {
                 };
 
                 const fileUploadResult: FileUploadResult =
-                    await dbService.saveFile(FileCategory.Pictures, request.file, fileOptions);
+                    await dbService.saveFile(FileCategory.Images, request.file, fileOptions);
 
-                const oldPictureId = projectAuthorization.project.picture;
+                const oldImageId = projectAuthorization.project.image;
 
                 await projectAuthorization.project.updateOne({
-                    picture: fileUploadResult.id
+                    image: fileUploadResult.id
                 });
 
-                if (oldPictureId) {
+                if (oldImageId) {
 
-                    await dbService.deleteFile(FileCategory.Pictures, oldPictureId);
+                    await dbService.deleteFile(FileCategory.Images, oldImageId);
                 }
 
-                response.status(201).send('project picture was successfully uploaded');
+                response.status(201).send('project image was successfully uploaded');
             } catch (error) {
 
                 response.status(500).send(error);
@@ -239,7 +239,7 @@ class ProjectsController {
         });
     }
 
-    async deleteProjectPicture(request: Auth0Request, response: Response) {
+    async deleteProjectImage(request: Auth0Request, response: Response) {
 
         try {
 
@@ -257,25 +257,25 @@ class ProjectsController {
                 return response.status(400).send('project does not exist');
             }
 
-            await dbService.deleteFile(FileCategory.Pictures, request.params.fileId);
+            await dbService.deleteFile(FileCategory.Images, request.params.fileId);
 
             await projectAuthorization.project.updateOne({
-                picture: undefined
+                image: undefined
             });
 
-            response.status(201).send('project picture was successfully removed');
+            response.status(201).send('project image was successfully removed');
         } catch (error) {
 
             response.status(500).send(error);
         }
     }
 
-    async getProjectPicture(request: Auth0Request, response: Response) {
+    async getProjectImage(request: Auth0Request, response: Response) {
         try {
 
             // loading the project data before loading its file is not needed atm but the project id
             // will be in request.params.id
-            const fileStream: FileStream = await dbService.getFileStream(FileCategory.Pictures, request.params.fileId);
+            const fileStream: FileStream = await dbService.getFileStream(FileCategory.Images, request.params.fileId);
             response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
             fileStream.stream.pipe(response);
         } catch (error) {

@@ -1,11 +1,13 @@
-import {model, Model, Document, Schema} from "mongoose";
+import {model, Model, Document, Schema, Types} from "mongoose";
+import {IGridFSFile} from "../../common/services/gridfs-model-builder.service";
 
-interface IProfile extends Document{
-    //the userId here is the user's id in Auth0.
+export interface IProfile extends Document{
+    // the userId here is the user's id in Auth0.
     userId: string;
     firstName: string;
     lastName: string;
     description: string;
+    image: Types.ObjectId | IGridFSFile;
 }
 
 const ProfileSchema: Schema = new Schema({

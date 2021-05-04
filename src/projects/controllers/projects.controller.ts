@@ -17,6 +17,7 @@ import {winstonService} from "../../common/services/winston.service";
 import {projectsQueryService} from "../services/projects-query.service";
 import {dbService} from "../../common/services/db.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
+import {Types} from "mongoose";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -228,7 +229,7 @@ class ProjectsController {
 
                 if (oldImageId) {
 
-                    await dbService.deleteFile(FileCategory.Images, oldImageId);
+                    await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
                 }
 
                 response.status(201).send('project image was successfully uploaded');

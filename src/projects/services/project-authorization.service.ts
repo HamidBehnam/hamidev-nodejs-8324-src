@@ -4,7 +4,7 @@ import {
     ProjectAuthorizationByMember, ProjectAuthorizationByTask,
     ProjectOperationRole
 } from "../../common/services/types.service";
-import {Member} from "../../members/models/members.model";
+import {IMember, Member} from "../../members/models/members.model";
 import {Task} from "../../tasks/models/tasks.model";
 
 class ProjectAuthorizationService {
@@ -27,7 +27,7 @@ class ProjectAuthorizationService {
 
         const populatedProject = await project.populate('members').execPopulate();
 
-        const authorizationResult = populatedProject.members.some(member => member.userId === userId && member.role >= expectedRole);
+        const authorizationResult = (populatedProject.members as IMember[]).some(member => member.userId === userId && member.role >= expectedRole);
 
         return {
             isAuthorized: authorizationResult,

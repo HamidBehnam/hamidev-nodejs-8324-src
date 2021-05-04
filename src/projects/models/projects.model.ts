@@ -1,16 +1,19 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
 import {WorkStatus} from "../../common/services/types.service";
+import {IMember} from "../../members/models/members.model";
+import {ITask} from "../../tasks/models/tasks.model";
+import {IGridFSFile} from "../../common/services/gridfs-model-builder.service";
+import {IProfile} from "../../profiles/models/profiles.model";
 
 export interface IProject extends Document {
     title: string;
     description: string;
     status: string;
     createdBy: string;
-    creatorProfile: Types.ObjectId;
-    //members type could be IMember[] or Types.ObjectId[] depending on if it's populated or not
-    members: any[];
-    tasks: any[];
-    image: any;
+    creatorProfile: Types.ObjectId | IProfile;
+    members: Types.ObjectId[] | IMember[];
+    tasks: Types.ObjectId[] | ITask[];
+    image: Types.ObjectId | IGridFSFile;
 }
 
 const ProjectSchema: Schema = new Schema({

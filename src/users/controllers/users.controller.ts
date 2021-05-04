@@ -2,6 +2,7 @@ import {Response} from "express";
 import {authService} from "../../common/services/auth.service";
 import {AxiosResponse} from "axios";
 import {Auth0Request} from "../../common/types/interfaces";
+import {errorHandlerService} from "../../common/services/error-handler.service";
 
 class UsersController {
 
@@ -10,7 +11,7 @@ class UsersController {
             const {data} = await authService.getUsers() as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -19,7 +20,7 @@ class UsersController {
             const {data} = await authService.getUser(request.params.id) as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -28,7 +29,7 @@ class UsersController {
             const {data} = await authService.getUserRoles(request.params.id) as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -37,7 +38,7 @@ class UsersController {
             const {data} = await authService.setUserRoles(request.params.id, request.body) as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -46,7 +47,7 @@ class UsersController {
             const {data} = await authService.deleteUserRoles(request.params.id, request.body) as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -55,7 +56,7 @@ class UsersController {
             const {data} = await authService.getUserPermissions(request.params.id) as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -64,7 +65,7 @@ class UsersController {
             const {data} = await authService.getRoles() as AxiosResponse;
             response.status(200).send(data);
         } catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 }

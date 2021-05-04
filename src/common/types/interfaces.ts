@@ -14,16 +14,15 @@ export interface Auth0MetaData {
 }
 
 export interface ProjectAuthorization {
-    isAuthorized: boolean;
-    project?: IProject;
+    project: IProject;
 }
 
 export interface ProjectAuthorizationByMember extends ProjectAuthorization {
-    member?: IMember
+    member: IMember
 }
 
 export interface ProjectAuthorizationByTask extends ProjectAuthorization {
-    task?: ITask
+    task: ITask
 }
 
 export interface FileOptions {

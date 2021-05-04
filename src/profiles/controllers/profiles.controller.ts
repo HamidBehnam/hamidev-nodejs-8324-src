@@ -9,6 +9,7 @@ import {dbService} from "../../common/services/db.service";
 import {Types} from "mongoose";
 import {Auth0MetaData, Auth0Request, FileOptions, FileStream, FileUploadResult} from "../../common/types/interfaces";
 import {FileCategory} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -54,7 +55,7 @@ class ProfilesController {
             });
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -73,7 +74,7 @@ class ProfilesController {
             response.status(200).send(profiles);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -85,7 +86,7 @@ class ProfilesController {
             response.status(200).send(profile);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -106,7 +107,7 @@ class ProfilesController {
              response.status(200).send(updatedProfile);
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 
@@ -124,7 +125,7 @@ class ProfilesController {
              response.status(200).send("profile was successfully deleted");
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 
@@ -135,7 +136,7 @@ class ProfilesController {
             response.status(200).send(userProfiles);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -186,7 +187,7 @@ class ProfilesController {
                 response.status(201).send('profile image was successfully uploaded');
             } catch (error) {
 
-                response.status(500).send(error);
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
         });
     }
@@ -214,7 +215,7 @@ class ProfilesController {
              response.status(201).send('profile image was successfully removed');
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 
@@ -228,7 +229,7 @@ class ProfilesController {
              fileStream.stream.pipe(response);
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 }

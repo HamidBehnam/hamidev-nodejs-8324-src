@@ -9,7 +9,6 @@ import {projectsQueryService} from "../services/projects-query.service";
 import {dbService} from "../../common/services/db.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 import {Types} from "mongoose";
-import {GenericError} from "../../common/types/errors";
 import {
     Auth0Request,
     FileOptions,
@@ -18,6 +17,7 @@ import {
     ProjectAuthorization
 } from "../../common/types/interfaces";
 import {FileCategory, ProjectOperationRole} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -43,7 +43,7 @@ class ProjectsController {
             response.status(201).send(project);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -103,7 +103,7 @@ class ProjectsController {
             response.status(200).send(projects);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -124,7 +124,7 @@ class ProjectsController {
             response.status(200).send(project);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -137,24 +137,12 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
-            }
-
             await projectAuthorization.project.updateOne(request.body);
 
             response.status(200).send('project was successfully updated');
         } catch (error) {
 
-            if (error instanceof GenericError) {
-                return response.status(400).send('special error');
-            }
-
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -166,24 +154,16 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
             await Member.deleteMany({
                 project: request.params.id
             });
-
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
-            }
 
             await projectAuthorization.project.deleteOne();
 
             response.status(200).send('project was successfully deleted');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -205,14 +185,6 @@ class ProjectsController {
                     request.params.id,
                     ProjectOperationRole.Admin
                 );
-
-                if (!projectAuthorization.isAuthorized) {
-                    return response.status(401).send('permission denied, please contact the project admin');
-                }
-
-                if (!projectAuthorization.project) {
-                    return response.status(400).send('project does not exist');
-                }
 
                 const fileOptions: FileOptions = {
                     gridFSBucketOpenUploadStreamOptions: {
@@ -239,7 +211,7 @@ class ProjectsController {
                 response.status(201).send('project image was successfully uploaded');
             } catch (error) {
 
-                response.status(500).send(error);
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
         });
     }
@@ -254,14 +226,6 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
-            }
-
             await dbService.deleteFile(FileCategory.Images, request.params.fileId);
 
             await projectAuthorization.project.updateOne({
@@ -273,7 +237,7 @@ class ProjectsController {
             response.status(201).send('project image was successfully removed');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -287,7 +251,7 @@ class ProjectsController {
             fileStream.stream.pipe(response);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -310,14 +274,6 @@ class ProjectsController {
                     ProjectOperationRole.Admin
                 );
 
-                if (!projectAuthorization.isAuthorized) {
-                    return response.status(401).send('permission denied, please contact the project admin');
-                }
-
-                if (!projectAuthorization.project) {
-                    return response.status(400).send('project does not exist');
-                }
-
                 const fileOptions: FileOptions = {
                     gridFSBucketOpenUploadStreamOptions: {
                         metadata: {
@@ -338,7 +294,7 @@ class ProjectsController {
                 response.status(201).send('project attachment was successfully uploaded');
             } catch (error) {
 
-                response.status(500).send(error);
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
         });
     }
@@ -353,7 +309,7 @@ class ProjectsController {
             fileStream.stream.pipe(response);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 }

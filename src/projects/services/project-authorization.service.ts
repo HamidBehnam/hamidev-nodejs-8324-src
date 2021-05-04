@@ -1,7 +1,7 @@
 import {Project} from "../models/projects.model";
 import {IMember, Member} from "../../members/models/members.model";
 import {Task} from "../../tasks/models/tasks.model";
-import {GenericError} from "../../common/types/errors";
+import {NotAuthorizedError, NotFoundError} from "../../common/types/errors";
 import {ProjectOperationRole} from "../../common/types/enums";
 import {
     ProjectAuthorization,
@@ -15,15 +15,11 @@ class ProjectAuthorizationService {
         const project = await Project.findById(projectId);
 
         if (!project) {
-            // return {
-            //     isAuthorized: false
-            // };
-            throw new GenericError('the project does not exist');
+            throw new NotFoundError('project does not exist');
         }
 
         if (project.createdBy === userId) {
             return {
-                isAuthorized: true,
                 project
             };
         }
@@ -32,10 +28,13 @@ class ProjectAuthorizationService {
 
         const authorizationResult = (populatedProject.members as IMember[]).some(member => member.userId === userId && member.role >= expectedRole);
 
-        return {
-            isAuthorized: authorizationResult,
-            project
-        };
+        if (authorizationResult) {
+            return {
+                project
+            };
+        } else {
+            throw new NotAuthorizedError('permission denied, please contact the project admin');
+        }
     }
 
     async authorizeByMember(userId: string, memberId: string, expectedRole: ProjectOperationRole): Promise<ProjectAuthorizationByMember> {
@@ -43,9 +42,7 @@ class ProjectAuthorizationService {
         const member = await Member.findById(memberId);
 
         if (!member) {
-            return {
-                isAuthorized: false
-            };
+            throw new NotFoundError('member does not exist');
         }
 
         const projectAuthorization = await this.authorize(userId, member.project.toString(), expectedRole);
@@ -61,9 +58,7 @@ class ProjectAuthorizationService {
         const task = await Task.findById(taskId);
 
         if (!task) {
-            return {
-                isAuthorized: false
-            };
+            throw new NotFoundError('task does not exist');
         }
 
         const projectAuthorization = await this.authorize(userId, task.project.toString(), expectedRole);

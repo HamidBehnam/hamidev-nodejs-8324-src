@@ -14,3 +14,28 @@ export class GenericError extends Error {
         Object.setPrototypeOf(this, GenericError.prototype);
     }
 }
+
+export class NotFoundError extends GenericError {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NotFoundError';
+        Object.setPrototypeOf(this, NotFoundError.prototype);
+    }
+}
+
+export class BadRequestError extends GenericError {
+    constructor(message: string) {
+        super(message);
+        this.name = 'BadRequestError';
+        Object.setPrototypeOf(this, BadRequestError.prototype);
+    }
+}
+
+export class NotAuthorizedError extends GenericError {
+    constructor(message: string) {
+        super(message);
+        this.name = 'NotAuthorizedError';
+        Object.setPrototypeOf(this, NotAuthorizedError.prototype);
+    }
+}
+

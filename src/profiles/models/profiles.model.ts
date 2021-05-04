@@ -26,6 +26,10 @@ const ProfileSchema: Schema = new Schema({
     description: {
         type: String,
         required: true
+    },
+    image: {
+        type: Types.ObjectId,
+        ref: 'Image'
     }
 }, {
     toJSON: {
@@ -39,7 +43,8 @@ export const profilesProjection = {
     userId: true,
     lastName: true,
     firstName: true,
-    fullName: true
+    fullName: true,
+    image: true
 };
 
 ProfileSchema.virtual('fullName').get(function (this: IProfile) {

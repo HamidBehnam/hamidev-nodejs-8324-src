@@ -41,5 +41,20 @@ export const profilesRoutesConfig = (): Router => {
         profilesController.getUserProfiles
     ]);
 
+    profileRouter.post('/profiles/:id/images', [
+        authMiddleware.checkJwt,
+        profilesController.uploadProfileImage
+    ]);
+
+    // profileRouter.get('/profiles/:id/images/:fileId', [
+    //     authMiddleware.checkJwt,
+    //     profilesController.getProfileImage
+    // ]);
+    //
+    // profileRouter.delete('/profiles/:id/images/:fileId', [
+    //     authMiddleware.checkJwt,
+    //     profilesController.deleteProfileImage
+    // ]);
+
     return profileRouter;
 };

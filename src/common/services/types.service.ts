@@ -90,5 +90,4 @@ export interface FileStream {
 
 export interface FileUploadResult {
     id: string;
-    message: string;
 }

@@ -1,10 +1,19 @@
-import {Auth0MetaData, Auth0Request} from "../../common/services/types.service";
+import {
+    Auth0MetaData,
+    Auth0Request,
+    FileCategory,
+    FileOptions,
+    FileUploadResult
+} from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
 import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
 import {Email} from "../../emails/models/emails.model";
 import {configService} from "../../common/services/config.service";
 import {profilesQueryService} from "../services/profiles-query.service";
+import {multerMiddleware} from "../../common/middlewares/multer.middleware";
+import {dbService} from "../../common/services/db.service";
+import {Types} from "mongoose";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -63,7 +72,8 @@ class ProfilesController {
                 .limit(queryParams.limit)
                 .skip(--queryParams.page * queryParams.limit)
                 .sort(queryParams.sort)
-                .select(profilesProjection);
+                .select(profilesProjection)
+                .populate('image', 'filename metadata uploadDate');
 
             response.status(200).send(profiles);
         } catch (error) {
@@ -132,6 +142,58 @@ class ProfilesController {
 
             response.status(500).send(error);
         }
+    }
+
+    async uploadProfileImage(request: Auth0Request, response: Response) {
+
+        multerMiddleware.imageMulter('image')(request, response, async (error: any) => {
+            try {
+
+                if (error) {
+                    return response.status(400).send(error);
+                }
+
+                if (!request.file) {
+                    return response.status(400).send('file is not sent');
+                }
+
+                const profile = await Profile.findOne({
+                    _id: request.params.id,
+                    userId: request.user.sub
+                });
+
+                if (!profile) {
+                    return response.status(404).send("the profile does not exist or does not belong to the user");
+                }
+
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            profile: profile._id
+                        }
+                    }
+                };
+
+                const fileUploadResult: FileUploadResult =
+                    await dbService.saveFile(FileCategory.Images, request.file, fileOptions);
+
+                const oldImageId = profile.image;
+
+                await profile.updateOne({
+                    image: fileUploadResult.id
+                });
+
+                if (oldImageId) {
+
+                    await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
+                }
+
+                response.status(201).send('profile image was successfully uploaded');
+            } catch (error) {
+
+                response.status(500).send(error);
+            }
+        });
     }
 }
 

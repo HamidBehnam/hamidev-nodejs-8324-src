@@ -58,8 +58,7 @@ class DbService {
 
             uploadStream.on('error', () => reject('error in uploading the file to database'));
             uploadStream.on('finish', () => resolve({
-                id: uploadStream.id.toString(),
-                message: 'file was successfully uploaded'
+                id: uploadStream.id.toString()
             }));
         });
     }

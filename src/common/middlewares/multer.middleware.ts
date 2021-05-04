@@ -1,5 +1,6 @@
 import multer from "multer";
-import {Auth0Request, CustomError} from "../services/types.service";
+import {Auth0Request} from "../services/types.service";
+import {GenericError} from "../types/errors";
 
 class MulterMiddleware {
 
@@ -27,7 +28,7 @@ class MulterMiddleware {
                     return callback(null, true);
                 }
 
-                callback(new CustomError('acceptable files: *.png, *.jpeg, *.jpg, *.gif, *.svg'));
+                callback(new GenericError('acceptable files: *.png, *.jpeg, *.jpg, *.gif, *.svg'));
             }
         });
 
@@ -54,7 +55,7 @@ class MulterMiddleware {
                     return callback(null, true);
                 }
 
-                callback(new CustomError(
+                callback(new GenericError(
                     'acceptable files: *.pdf, *.doc, *.docx, *.ppt, *.pptx, *.xls, *xlsx, *.png, *.jpeg, *.jpg, *.txt'
                 ));
             }

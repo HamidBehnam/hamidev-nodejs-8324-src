@@ -6,6 +6,7 @@ import {
 } from "../../common/services/types.service";
 import {IMember, Member} from "../../members/models/members.model";
 import {Task} from "../../tasks/models/tasks.model";
+import {GenericError} from "../../common/types/errors";
 
 class ProjectAuthorizationService {
     async authorize(userId: string, projectId: string, expectedRole: ProjectOperationRole): Promise<ProjectAuthorization> {
@@ -13,9 +14,10 @@ class ProjectAuthorizationService {
         const project = await Project.findById(projectId);
 
         if (!project) {
-            return {
-                isAuthorized: false
-            };
+            // return {
+            //     isAuthorized: false
+            // };
+            throw new GenericError('the project does not exist');
         }
 
         if (project.createdBy === userId) {

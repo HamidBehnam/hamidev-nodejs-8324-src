@@ -18,6 +18,7 @@ import {projectsQueryService} from "../services/projects-query.service";
 import {dbService} from "../../common/services/db.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 import {Types} from "mongoose";
+import {GenericError} from "../../common/types/errors";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -149,6 +150,10 @@ class ProjectsController {
 
             response.status(200).send('project was successfully updated');
         } catch (error) {
+
+            if (error instanceof GenericError) {
+                return response.status(400).send('special error');
+            }
 
             response.status(500).send(error);
         }
@@ -285,6 +290,58 @@ class ProjectsController {
 
             response.status(500).send(error);
         }
+    }
+
+    async uploadProjectAttachment(request: Auth0Request, response: Response) {
+
+        multerMiddleware.attachmentMulter('attachment')(request, response, async (error: any) => {
+            try {
+
+                if (error) {
+                    return response.status(400).send(error);
+                }
+
+                if (!request.file) {
+                    return response.status(400).send('file is not sent');
+                }
+
+                const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                    request.user.sub,
+                    request.params.id,
+                    ProjectOperationRole.Admin
+                );
+
+                if (!projectAuthorization.isAuthorized) {
+                    return response.status(401).send('permission denied, please contact the project admin');
+                }
+
+                if (!projectAuthorization.project) {
+                    return response.status(400).send('project does not exist');
+                }
+
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            project: projectAuthorization.project._id
+                        }
+                    }
+                };
+
+                const fileUploadResult: FileUploadResult =
+                    await dbService.saveFile(FileCategory.Images, request.file, fileOptions);
+
+                await projectAuthorization.project.updateOne({
+                    $push: {
+                        attachments: fileUploadResult.id
+                    }
+                });
+
+                response.status(201).send('project attachment was successfully uploaded');
+            } catch (error) {
+
+                response.status(500).send(error);
+            }
+        });
     }
 
     async getProjectAttachment(request: Auth0Request, response: Response) {

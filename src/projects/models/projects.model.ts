@@ -14,6 +14,7 @@ export interface IProject extends Document {
     members: Types.ObjectId[] | IMember[];
     tasks: Types.ObjectId[] | ITask[];
     image: Types.ObjectId | IGridFSFile;
+    attachments: Types.ObjectId[] | IGridFSFile[]
 }
 
 const ProjectSchema: Schema = new Schema({
@@ -62,6 +63,12 @@ const ProjectSchema: Schema = new Schema({
     image: {
         type: Types.ObjectId,
         ref: 'Image'
+    },
+    attachments: {
+        type: [{
+            type: Types.ObjectId,
+            ref: 'Attachment'
+        }]
     }
 }, {
     toJSON: {

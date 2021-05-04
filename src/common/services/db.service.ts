@@ -5,7 +5,7 @@ import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
 import {Readable} from "stream";
 import {gridFSModelBuilder} from "./gridfs-model-builder.service";
-import {GenericError} from "../types/errors";
+import {GenericError, NotFoundError} from "../types/errors";
 import {FileCategory} from "../types/enums";
 import {FileOptions, FileStream, FileUploadResult} from "../types/interfaces";
 
@@ -86,7 +86,7 @@ class DbService {
         }).toArray();
 
         if (foundFiles.length === 0) {
-            throw new GenericError('file does not exist');
+            throw new NotFoundError('file does not exist');
         }
 
         return {

@@ -301,6 +301,32 @@ class ProjectsController {
         });
     }
 
+
+    async deleteProjectAttachment(request: Auth0Request, response: Response) {
+
+        try {
+
+            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
+
+            await dbService.deleteFile(FileCategory.Attachments, request.params.fileId);
+
+            await projectAuthorization.project.updateOne({
+                $pull: {
+                    attachments: request.params.fileId
+                }
+            });
+
+            response.status(201).send('project attachment was successfully removed');
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
     async getProjectAttachment(request: Auth0Request, response: Response) {
         try {
 

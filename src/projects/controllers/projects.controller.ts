@@ -260,7 +260,9 @@ class ProjectsController {
             await dbService.deleteFile(FileCategory.Images, request.params.fileId);
 
             await projectAuthorization.project.updateOne({
-                image: undefined
+                $unset: {
+                    image: 1
+                }
             });
 
             response.status(201).send('project image was successfully removed');

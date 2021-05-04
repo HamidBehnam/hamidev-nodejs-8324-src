@@ -2,7 +2,7 @@ import {
     Auth0MetaData,
     Auth0Request,
     FileCategory,
-    FileOptions,
+    FileOptions, FileStream,
     FileUploadResult
 } from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
@@ -194,6 +194,47 @@ class ProfilesController {
                 response.status(500).send(error);
             }
         });
+    }
+
+    async deleteProfileImage(request: Auth0Request, response: Response) {
+         try {
+
+             const profile = await Profile.findOne({
+                 _id: request.params.id,
+                 userId: request.user.sub
+             });
+
+             if (!profile) {
+                 return response.status(404).send("the profile does not exist or does not belong to the user");
+             }
+
+             await dbService.deleteFile(FileCategory.Images, request.params.fileId);
+
+             await profile.updateOne({
+                 $unset: {
+                     image: 1
+                 }
+             });
+
+             response.status(201).send('profile image was successfully removed');
+         } catch (error) {
+
+             response.status(500).send(error);
+         }
+    }
+
+    async getProfileImage(request: Auth0Request, response: Response) {
+         try {
+
+             // loading the profile data before loading its file is not needed atm but the profile id
+             // will be in request.params.id
+             const fileStream: FileStream = await dbService.getFileStream(FileCategory.Images, request.params.fileId);
+             response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
+             fileStream.stream.pipe(response);
+         } catch (error) {
+
+             response.status(500).send(error);
+         }
     }
 }
 

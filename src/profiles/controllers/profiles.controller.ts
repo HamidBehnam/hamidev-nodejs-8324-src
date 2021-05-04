@@ -1,10 +1,3 @@
-import {
-    Auth0MetaData,
-    Auth0Request,
-    FileCategory,
-    FileOptions, FileStream,
-    FileUploadResult
-} from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
 import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
@@ -14,6 +7,8 @@ import {profilesQueryService} from "../services/profiles-query.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 import {dbService} from "../../common/services/db.service";
 import {Types} from "mongoose";
+import {Auth0MetaData, Auth0Request, FileOptions, FileStream, FileUploadResult} from "../../common/types/interfaces";
+import {FileCategory} from "../../common/types/enums";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {

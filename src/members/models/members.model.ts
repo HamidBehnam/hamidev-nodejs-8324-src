@@ -1,5 +1,5 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
-import {ProjectOperationRole} from "../../common/services/types.service";
+import {ProjectOperationRole} from "../../common/types/enums";
 
 export interface IMember extends Document {
     userId: string;

@@ -1,14 +1,5 @@
 import {Response} from "express";
 import {Project} from "../models/projects.model";
-import {
-    Auth0Request,
-    FileCategory,
-    FileOptions,
-    FileStream,
-    FileUploadResult,
-    ProjectAuthorization,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
@@ -19,6 +10,14 @@ import {dbService} from "../../common/services/db.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
 import {Types} from "mongoose";
 import {GenericError} from "../../common/types/errors";
+import {
+    Auth0Request,
+    FileOptions,
+    FileStream,
+    FileUploadResult,
+    ProjectAuthorization
+} from "../../common/types/interfaces";
+import {FileCategory, ProjectOperationRole} from "../../common/types/enums";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {

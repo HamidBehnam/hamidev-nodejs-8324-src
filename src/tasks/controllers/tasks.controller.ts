@@ -1,13 +1,9 @@
-import {
-    Auth0Request,
-    ProjectAuthorization,
-    ProjectAuthorizationByTask,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Response} from "express";
 import {Task} from "../models/tasks.model";
 import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
 import {Member} from "../../members/models/members.model";
+import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByTask} from "../../common/types/interfaces";
+import {ProjectOperationRole} from "../../common/types/enums";
 
 class TasksController {
     async createTask(request: Auth0Request, response: Response) {

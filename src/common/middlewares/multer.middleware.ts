@@ -1,6 +1,6 @@
 import multer from "multer";
-import {Auth0Request} from "../services/types.service";
 import {GenericError} from "../types/errors";
+import {Auth0Request} from "../types/interfaces";
 
 class MulterMiddleware {
 

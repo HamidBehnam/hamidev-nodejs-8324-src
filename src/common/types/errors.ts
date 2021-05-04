@@ -9,6 +9,8 @@ export class GenericError extends Error {
         this.name = 'GenericError';
         this.error = message;
         Error.captureStackTrace(this, GenericError);
+        // added setPrototypeOf to be able to get the error type using instanceof:
+        // https://github.com/Microsoft/TypeScript/wiki/Breaking-Changes#extending-built-ins-like-error-array-and-map-may-no-longer-work
         Object.setPrototypeOf(this, GenericError.prototype);
     }
 }

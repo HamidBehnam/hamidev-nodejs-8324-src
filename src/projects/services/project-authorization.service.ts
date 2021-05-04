@@ -1,12 +1,13 @@
 import {Project} from "../models/projects.model";
-import {
-    ProjectAuthorization,
-    ProjectAuthorizationByMember, ProjectAuthorizationByTask,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {IMember, Member} from "../../members/models/members.model";
 import {Task} from "../../tasks/models/tasks.model";
 import {GenericError} from "../../common/types/errors";
+import {ProjectOperationRole} from "../../common/types/enums";
+import {
+    ProjectAuthorization,
+    ProjectAuthorizationByMember,
+    ProjectAuthorizationByTask
+} from "../../common/types/interfaces";
 
 class ProjectAuthorizationService {
     async authorize(userId: string, projectId: string, expectedRole: ProjectOperationRole): Promise<ProjectAuthorization> {

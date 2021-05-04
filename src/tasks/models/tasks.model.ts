@@ -1,5 +1,5 @@
 import {Document, model, Model, Schema, Types} from "mongoose";
-import {WorkStatus} from "../../common/services/types.service";
+import {WorkStatus} from "../../common/types/enums";
 
 export interface ITask extends Document {
     ownerUserId: string;

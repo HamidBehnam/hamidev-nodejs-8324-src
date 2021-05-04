@@ -3,10 +3,11 @@ import {configService} from "./config.service";
 import {winstonService} from "./winston.service";
 import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
-import {FileCategory, FileOptions, FileStream, FileUploadResult} from "./types.service";
 import {Readable} from "stream";
 import {gridFSModelBuilder} from "./gridfs-model-builder.service";
 import {GenericError} from "../types/errors";
+import {FileCategory} from "../types/enums";
+import {FileOptions, FileStream, FileUploadResult} from "../types/interfaces";
 
 class DbService {
     private mongooseInstance: mongoose.Mongoose | null;

@@ -3,7 +3,7 @@ import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {projectsController} from "./controllers/projects.controller";
 import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
 import {projectsJoiService} from "./services/projects-joi.service";
-import {ValidationDataSource} from "../common/services/types.service";
+import {ValidationDataSource} from "../common/types/enums";
 
 export const projectsRoutesConfig = (): Router => {
     const projectsRouter = Router();

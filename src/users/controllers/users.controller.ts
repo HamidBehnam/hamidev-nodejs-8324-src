@@ -1,7 +1,7 @@
-import {Auth0Request} from "../../common/services/types.service";
 import {Response} from "express";
 import {authService} from "../../common/services/auth.service";
 import {AxiosResponse} from "axios";
+import {Auth0Request} from "../../common/types/interfaces";
 
 class UsersController {
 

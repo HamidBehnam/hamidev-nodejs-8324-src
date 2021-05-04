@@ -3,7 +3,7 @@ import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {profilesController} from "./controllers/profiles.controller";
 import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
 import {profilesJoiService} from "./services/profiles-joi.service";
-import {ValidationDataSource} from "../common/services/types.service";
+import {ValidationDataSource} from "../common/types/enums";
 
 export const profilesRoutesConfig = (): Router => {
 

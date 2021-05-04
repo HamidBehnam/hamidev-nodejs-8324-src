@@ -1,6 +1,7 @@
-import {Auth0Request, ValidationDataSource} from "../services/types.service";
 import {NextFunction, Response} from "express";
 import Joi, {ValidationResult} from "joi";
+import {Auth0Request} from "../types/interfaces";
+import {ValidationDataSource} from "../types/enums";
 
 class FieldsMiddleware {
 

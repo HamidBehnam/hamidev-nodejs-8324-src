@@ -1,13 +1,9 @@
-import {
-    Auth0Request,
-    ProjectAuthorization,
-    ProjectAuthorizationByMember,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Response} from "express";
 import {Member} from "../models/members.model";
 import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
 import {Profile} from "../../profiles/models/profiles.model";
+import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByMember} from "../../common/types/interfaces";
+import {ProjectOperationRole} from "../../common/types/enums";
 
 class MembersController {
 

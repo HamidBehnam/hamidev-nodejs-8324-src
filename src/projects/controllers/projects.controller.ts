@@ -86,8 +86,10 @@ class ProjectsController {
                         }]
                     }, {
                         path: 'image',
-                        model: 'Image',
-                        select: '-__v'
+                        model: 'Image'
+                    }, {
+                        path: 'attachments',
+                        model: 'Attachment'
                     }
                 ]);
 
@@ -283,7 +285,7 @@ class ProjectsController {
                 };
 
                 const fileUploadResult: FileUploadResult =
-                    await dbService.saveFile(FileCategory.Images, request.file, fileOptions);
+                    await dbService.saveFile(FileCategory.Attachments, request.file, fileOptions);
 
                 await projectAuthorization.project.updateOne({
                     $push: {

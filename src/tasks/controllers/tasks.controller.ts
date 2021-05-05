@@ -5,6 +5,7 @@ import {Member} from "../../members/models/members.model";
 import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByTask} from "../../common/types/interfaces";
 import {ProjectOperationRole} from "../../common/types/enums";
 import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError, NotFoundError} from "../../common/types/errors";
 
 class TasksController {
     async createTask(request: Auth0Request, response: Response) {
@@ -22,13 +23,15 @@ class TasksController {
             if (request.body.owner) {
 
                 if (!projectAuthorization.project.members.includes(request.body.owner)) {
-                    return response.status(400).send('owner should be one of the members of the project');
+                    const error = new BadRequestError('owner should be one of the members of the project');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const owner = await Member.findById(request.body.owner);
 
                 if (!owner) {
-                    return response.status(404).send('owner does not exist');
+                    const error = new NotFoundError('owner does not exist');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 taskData = {
@@ -101,13 +104,15 @@ class TasksController {
             if (request.body.owner) {
 
                 if (!projectAuthorizationByTask.project.members.includes(request.body.owner)) {
-                    return response.status(400).send('owner should be one of the members of the project');
+                    const error = new BadRequestError('owner should be one of the members of the project');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const owner = await Member.findById(request.body.owner);
 
                 if (!owner) {
-                    return response.status(404).send('owner does not exist');
+                    const error = new NotFoundError('owner does not exist');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 taskData = {

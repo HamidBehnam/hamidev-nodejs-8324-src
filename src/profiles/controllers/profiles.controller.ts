@@ -10,6 +10,7 @@ import {Types} from "mongoose";
 import {Auth0MetaData, Auth0Request, FileOptions, FileStream, FileUploadResult} from "../../common/types/interfaces";
 import {FileCategory} from "../../common/types/enums";
 import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError, NotFoundError} from "../../common/types/errors";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -18,7 +19,8 @@ class ProfilesController {
             const existingProfile = await Profile.findOne({userId: request.user.sub});
 
             if (existingProfile) {
-                response.status(400).send('user already has a profile');
+                const error = new BadRequestError('user already has a profile');
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
                 return next();
             }
 
@@ -101,7 +103,8 @@ class ProfilesController {
              });
 
              if (!updatedProfile) {
-                 return response.status(404).send("the profile does not exist or does not belong to the user");
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
              }
 
              response.status(200).send(updatedProfile);
@@ -119,7 +122,8 @@ class ProfilesController {
              });
 
              if (!deletedProfile) {
-                 return response.status(404).send("the profile does not exist or does not belong to the user");
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
              }
 
              response.status(200).send("profile was successfully deleted");
@@ -146,11 +150,12 @@ class ProfilesController {
             try {
 
                 if (error) {
-                    return response.status(400).send(error);
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 if (!request.file) {
-                    return response.status(400).send('file is not sent');
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const profile = await Profile.findOne({
@@ -159,7 +164,8 @@ class ProfilesController {
                 });
 
                 if (!profile) {
-                    return response.status(404).send("the profile does not exist or does not belong to the user");
+                    const error = new NotFoundError("profile does not exist or does not belong to the user");
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const fileOptions: FileOptions = {
@@ -201,7 +207,8 @@ class ProfilesController {
              });
 
              if (!profile) {
-                 return response.status(404).send("the profile does not exist or does not belong to the user");
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
              }
 
              await dbService.deleteFile(FileCategory.Images, request.params.fileId);

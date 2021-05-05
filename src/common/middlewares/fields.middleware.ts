@@ -2,6 +2,8 @@ import {NextFunction, Response} from "express";
 import Joi, {ValidationResult} from "joi";
 import {Auth0Request} from "../types/interfaces";
 import {ValidationDataSource} from "../types/enums";
+import {BadRequestError} from "../types/errors";
+import {errorHandlerService} from "../services/error-handler.service";
 
 class FieldsMiddleware {
 
@@ -18,7 +20,8 @@ class FieldsMiddleware {
             });
 
             if (foundDisallowedField) {
-                return response.status(400).send(`request data has disallowed fields: ${foundDisallowedField}`);
+                const error = new BadRequestError(`request data has disallowed fields: ${foundDisallowedField}`);
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             next();
@@ -48,7 +51,8 @@ class FieldsMiddleware {
             });
 
             if (validationResult.error) {
-                return response.status(400).send(validationResult.error);
+                return response.status(errorHandlerService.getStatusCode(validationResult.error))
+                    .send(validationResult.error);
             }
 
             next();

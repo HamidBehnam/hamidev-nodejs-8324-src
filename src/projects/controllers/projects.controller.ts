@@ -18,6 +18,7 @@ import {
 } from "../../common/types/interfaces";
 import {FileCategory, ProjectOperationRole} from "../../common/types/enums";
 import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError} from "../../common/types/errors";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -26,9 +27,11 @@ class ProjectsController {
             const creatorProfile = await Profile.findById(request.body.creatorProfile);
 
             if (!creatorProfile) {
-                return response.status(400).send('creator profile does not exist');
+                const error = new BadRequestError('creator profile does not exist');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             } else if (creatorProfile.userId !== request.user.sub) {
-                return response.status(400).send('provided profile does not belong to the user');
+                const error = new BadRequestError('provided profile does not belong to the user');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             const projectData = {
@@ -139,7 +142,11 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            await projectAuthorization.project.updateOne(request.body);
+            await projectAuthorization.project.updateOne(
+                request.body,
+                {
+                    runValidators: true
+                });
 
             response.status(200).send('project was successfully updated');
         } catch (error) {
@@ -175,11 +182,12 @@ class ProjectsController {
             try {
 
                 if (error) {
-                    return response.status(400).send(error);
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 if (!request.file) {
-                    return response.status(400).send('file is not sent');
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
@@ -263,11 +271,12 @@ class ProjectsController {
             try {
 
                 if (error) {
-                    return response.status(400).send(error);
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 if (!request.file) {
-                    return response.status(400).send('file is not sent');
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(

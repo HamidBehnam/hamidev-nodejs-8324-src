@@ -5,6 +5,7 @@ import {Profile} from "../../profiles/models/profiles.model";
 import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByMember} from "../../common/types/interfaces";
 import {ProjectOperationRole} from "../../common/types/enums";
 import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError} from "../../common/types/errors";
 
 class MembersController {
 
@@ -23,24 +24,28 @@ class MembersController {
             })
 
             if (existingMember) {
-                return response.status(400).send('project already has this member');
+                const error = new BadRequestError('project already has this member');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             const profile = await Profile.findById(request.body.profile);
 
             if (!profile) {
-                return response.status(400).send('profile does not exist');
+                const error = new BadRequestError('profile does not exist');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             if (request.body.role === ProjectOperationRole.Creator) {
                 if (request.body.profile !== projectAuthorization.project.creatorProfile.toString()) {
-                    return response.status(400).send('creator role can be assigned only to the project creator');
+                    const error = new BadRequestError('creator role can be assigned only to the project creator');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 
             if (request.body.profile === projectAuthorization.project.creatorProfile.toString()) {
                 if ( request.body.role !== ProjectOperationRole.Creator) {
-                    return response.status(400).send("if the project creator is going to be added as a member, they should have a creator role");
+                    const error = new BadRequestError('if the project creator is going to be added as a member, they should have a creator role');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 
@@ -97,13 +102,15 @@ class MembersController {
 
             if (request.body.role === ProjectOperationRole.Creator) {
                 if (request.body.profile !== projectAuthorizationByMember.project.creatorProfile.toString()) {
-                    return response.status(400).send('creator role can be assigned only to the project creator');
+                    const error = new BadRequestError('creator role can be assigned only to the project creator');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 
             if (projectAuthorizationByMember.member.profile === projectAuthorizationByMember.project.creatorProfile) {
                 if ( request.body.role !== ProjectOperationRole.Creator) {
-                    return response.status(400).send("'creator' is the only role the a project creator can be assigned to");
+                    const error = new BadRequestError("'creator' is the only role the a project creator can be assigned to");
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 

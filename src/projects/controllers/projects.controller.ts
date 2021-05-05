@@ -19,6 +19,7 @@ import {
 import {FileCategory, ProjectOperationRole} from "../../common/types/enums";
 import {errorHandlerService} from "../../common/services/error-handler.service";
 import {BadRequestError} from "../../common/types/errors";
+import {Task} from "../../tasks/models/tasks.model";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -166,6 +167,18 @@ class ProjectsController {
             await Member.deleteMany({
                 project: request.params.id
             });
+
+            await Task.deleteMany({
+                project: request.params.id
+            });
+
+            if (projectAuthorization.project.image) {
+                await dbService.deleteFile(FileCategory.Images, projectAuthorization.project.image.toString());
+            }
+
+            // using global.Promise to avoid getting the typescript warning suggesting that it needs to be imported.
+            await global.Promise.all((projectAuthorization.project.attachments as Types.ObjectId[])
+                .map((attachment) => dbService.deleteFile(FileCategory.Attachments, attachment.toString())));
 
             await projectAuthorization.project.deleteOne();
 

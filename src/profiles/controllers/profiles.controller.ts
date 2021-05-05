@@ -126,6 +126,10 @@ class ProfilesController {
                  return response.status(errorHandlerService.getStatusCode(error)).send(error);
              }
 
+             if (deletedProfile.image) {
+                 await dbService.deleteFile(FileCategory.Images, deletedProfile.image.toString());
+             }
+
              response.status(200).send("profile was successfully deleted");
          } catch (error) {
 

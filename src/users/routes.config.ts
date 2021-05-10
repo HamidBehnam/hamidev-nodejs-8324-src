@@ -1,7 +1,7 @@
 import {Router} from "express";
 import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {usersController} from "./controllers/users.controller";
-import {Auth0Permissions} from "../common/services/types.service";
+import {Auth0Permissions} from "../common/types/enums";
 
 export const usersRoutesConfig = (): Router => {
     const usersRouter = Router();

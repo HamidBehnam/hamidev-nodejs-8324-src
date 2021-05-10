@@ -1,13 +1,11 @@
-import {
-    Auth0Request,
-    ProjectAuthorization,
-    ProjectAuthorizationByMember,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Response} from "express";
 import {Member} from "../models/members.model";
 import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
 import {Profile} from "../../profiles/models/profiles.model";
+import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByMember} from "../../common/types/interfaces";
+import {ProjectOperationRole} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError} from "../../common/types/errors";
 
 class MembersController {
 
@@ -20,35 +18,34 @@ class MembersController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
             const existingMember = await Member.findOne({
                 project: request.body.project,
                 profile: request.body.profile
             })
 
             if (existingMember) {
-                return response.status(400).send('project already has this member');
+                const error = new BadRequestError('project already has this member');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             const profile = await Profile.findById(request.body.profile);
-            const project = projectAuthorization.project;
 
-            if (!profile || !project) {
-                return response.status(400).send('profile or project does not exist');
+            if (!profile) {
+                const error = new BadRequestError('profile does not exist');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             if (request.body.role === ProjectOperationRole.Creator) {
-                if (request.body.profile !== project.creatorProfile.toString()) {
-                    return response.status(400).send('creator role can be assigned only to the project creator');
+                if (request.body.profile !== projectAuthorization.project.creatorProfile.toString()) {
+                    const error = new BadRequestError('creator role can be assigned only to the project creator');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 
-            if (request.body.profile === project.creatorProfile.toString()) {
+            if (request.body.profile === projectAuthorization.project.creatorProfile.toString()) {
                 if ( request.body.role !== ProjectOperationRole.Creator) {
-                    return response.status(400).send("if the project creator is going to be added as a member, they should have a creator role");
+                    const error = new BadRequestError('if the project creator is going to be added as a member, they should have a creator role');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
             }
 
@@ -59,7 +56,7 @@ class MembersController {
 
             const member = await Member.create(memberData);
 
-            await project.updateOne({
+            await projectAuthorization.project.updateOne({
                 $push: {
                     members: member._id
                 }
@@ -68,7 +65,7 @@ class MembersController {
             response.status(201).send(member);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -79,7 +76,7 @@ class MembersController {
             response.status(200).send(members);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -90,7 +87,7 @@ class MembersController {
             response.status(200).send(member);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -103,12 +100,18 @@ class MembersController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorizationByMember.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
+            if (request.body.role === ProjectOperationRole.Creator) {
+                if (request.body.profile !== projectAuthorizationByMember.project.creatorProfile.toString()) {
+                    const error = new BadRequestError('creator role can be assigned only to the project creator');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
             }
 
-            if (!projectAuthorizationByMember.member) {
-                return response.status(404).send("member does not exist");
+            if (projectAuthorizationByMember.member.profile === projectAuthorizationByMember.project.creatorProfile) {
+                if ( request.body.role !== ProjectOperationRole.Creator) {
+                    const error = new BadRequestError("'creator' is the only role the a project creator can be assigned to");
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
             }
 
             await projectAuthorizationByMember.member.updateOne(
@@ -121,7 +124,7 @@ class MembersController {
             response.status(200).send('member was successfully updated');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -134,19 +137,7 @@ class MembersController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorizationByMember.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            if (!projectAuthorizationByMember.member) {
-                return response.status(404).send("member does not exist");
-            }
-
             await projectAuthorizationByMember.member.deleteOne();
-
-            if (!projectAuthorizationByMember.project) {
-                return response.status(404).send("project does not exist");
-            }
 
             await projectAuthorizationByMember.project.updateOne({
                 $pull: {
@@ -157,7 +148,7 @@ class MembersController {
             response.status(200).send("the member was successfully deleted");
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 }

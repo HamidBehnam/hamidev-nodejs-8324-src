@@ -1,5 +1,6 @@
 import multer from "multer";
-import {Auth0Request, CustomError} from "../services/types.service";
+import {BadRequestError} from "../types/errors";
+import {Auth0Request} from "../types/interfaces";
 
 class MulterMiddleware {
 
@@ -13,7 +14,10 @@ class MulterMiddleware {
         this.imageMulterCore = multer({
             storage: this.storage,
             limits: {
-                fileSize: 2000000
+                fileSize: 2000000,
+                fields: 0,
+                files: 1,
+                parts: 1
             },
             fileFilter(req: Auth0Request, file: Express.Multer.File, callback: multer.FileFilterCallback) {
                 const acceptableFileTypes = [
@@ -27,14 +31,17 @@ class MulterMiddleware {
                     return callback(null, true);
                 }
 
-                callback(new CustomError('acceptable files: *.png, *.jpeg, *.jpg, *.gif, *.svg'));
+                callback(new BadRequestError('acceptable files: *.png, *.jpeg, *.jpg, *.gif, *.svg'));
             }
         });
 
         this.attachmentMulterCore = multer({
             storage: this.storage,
             limits: {
-                fileSize: 5000000
+                fileSize: 5000000,
+                fields: 0,
+                files: 1,
+                parts: 1
             },
             fileFilter(req: Auth0Request, file: Express.Multer.File, callback: multer.FileFilterCallback) {
                 const acceptableFileTypes = [
@@ -54,7 +61,7 @@ class MulterMiddleware {
                     return callback(null, true);
                 }
 
-                callback(new CustomError(
+                callback(new BadRequestError(
                     'acceptable files: *.pdf, *.doc, *.docx, *.ppt, *.pptx, *.xls, *xlsx, *.png, *.jpeg, *.jpg, *.txt'
                 ));
             }

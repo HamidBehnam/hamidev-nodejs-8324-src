@@ -1,11 +1,11 @@
 import jwt_decode from "jwt-decode";
 import {AxiosError, AxiosRequestConfig, AxiosResponse} from "axios";
 import {configService} from "./config.service";
-import {Auth0MetaData} from "./types.service";
 import axios = require("axios");
 import {promises as fsPromises, constants as fsConstants} from "fs";
 import {winstonService} from "./winston.service";
 import * as path from "path";
+import {Auth0MetaData} from "../types/interfaces";
 
 class AuthService {
     private machineToMachineAccessToken = '';

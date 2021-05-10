@@ -1,5 +1,5 @@
 import {Document, model, Model, Schema} from "mongoose";
-import {CustomError} from "./types.service";
+import {GenericError} from "../types/errors";
 
 // this is the document interface for <bucketName>.files collection that mongo creates.
 export interface IGridFSFile extends Document {
@@ -62,15 +62,15 @@ class GridFSModelBuilder {
         ];
 
         operations.forEach(operation => this.gridFSFileSchema.pre(operation, () => {
-            throw new CustomError(errorMessage);
+            throw new GenericError(errorMessage);
         }))
 
         this.gridFSFileSchema.pre('de', { document: true, query: false }, () => {
-            throw new CustomError(errorMessage);
+            throw new GenericError(errorMessage);
         })
 
         this.gridFSFileSchema.pre('remove', { query: true, document: false }, () => {
-            throw new CustomError(errorMessage);
+            throw new GenericError(errorMessage);
         })
     }
 

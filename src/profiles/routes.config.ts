@@ -3,7 +3,7 @@ import {authMiddleware} from "../common/middlewares/auth.middleware";
 import {profilesController} from "./controllers/profiles.controller";
 import {fieldsMiddleware} from "../common/middlewares/fields.middleware";
 import {profilesJoiService} from "./services/profiles-joi.service";
-import {ValidationDataSource} from "../common/services/types.service";
+import {ValidationDataSource} from "../common/types/enums";
 
 export const profilesRoutesConfig = (): Router => {
 
@@ -39,6 +39,21 @@ export const profilesRoutesConfig = (): Router => {
     profileRouter.get('/user-profiles/:id', [
         authMiddleware.checkJwt,
         profilesController.getUserProfiles
+    ]);
+
+    profileRouter.post('/profiles/:id/images', [
+        authMiddleware.checkJwt,
+        profilesController.uploadProfileImage
+    ]);
+
+    profileRouter.get('/profiles/:id/images/:fileId', [
+        authMiddleware.checkJwt,
+        profilesController.getProfileImage
+    ]);
+
+    profileRouter.delete('/profiles/:id/images/:fileId', [
+        authMiddleware.checkJwt,
+        profilesController.deleteProfileImage
     ]);
 
     return profileRouter;

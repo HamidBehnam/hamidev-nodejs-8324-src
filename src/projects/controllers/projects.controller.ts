@@ -1,14 +1,5 @@
 import {Response} from "express";
 import {Project} from "../models/projects.model";
-import {
-    Auth0Request,
-    FileCategory,
-    FileOptions,
-    FileStream,
-    FileUploadResult,
-    ProjectAuthorization,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Profile} from "../../profiles/models/profiles.model";
 import {sendgridService} from "../../common/services/sendgrid.service";
 import {projectAuthorizationService} from "../services/project-authorization.service";
@@ -17,6 +8,18 @@ import {winstonService} from "../../common/services/winston.service";
 import {projectsQueryService} from "../services/projects-query.service";
 import {dbService} from "../../common/services/db.service";
 import {multerMiddleware} from "../../common/middlewares/multer.middleware";
+import {Types} from "mongoose";
+import {
+    Auth0Request,
+    FileOptions,
+    FileStream,
+    FileUploadResult,
+    ProjectAuthorization
+} from "../../common/types/interfaces";
+import {FileCategory, ProjectOperationRole} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError} from "../../common/types/errors";
+import {Task} from "../../tasks/models/tasks.model";
 
 class ProjectsController {
     async createProject(request: Auth0Request, response: Response) {
@@ -25,9 +28,11 @@ class ProjectsController {
             const creatorProfile = await Profile.findById(request.body.creatorProfile);
 
             if (!creatorProfile) {
-                return response.status(400).send('creator profile does not exist');
+                const error = new BadRequestError('creator profile does not exist');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             } else if (creatorProfile.userId !== request.user.sub) {
-                return response.status(400).send('provided profile does not belong to the user');
+                const error = new BadRequestError('provided profile does not belong to the user');
+                return response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
 
             const projectData = {
@@ -42,7 +47,7 @@ class ProjectsController {
             response.status(201).send(project);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -85,8 +90,10 @@ class ProjectsController {
                         }]
                     }, {
                         path: 'image',
-                        model: 'Image',
-                        select: '-__v'
+                        model: 'Image'
+                    }, {
+                        path: 'attachments',
+                        model: 'Attachment'
                     }
                 ]);
 
@@ -102,7 +109,7 @@ class ProjectsController {
             response.status(200).send(projects);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -123,7 +130,7 @@ class ProjectsController {
             response.status(200).send(project);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -136,20 +143,16 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
-            }
-
-            await projectAuthorization.project.updateOne(request.body);
+            await projectAuthorization.project.updateOne(
+                request.body,
+                {
+                    runValidators: true
+                });
 
             response.status(200).send('project was successfully updated');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -161,24 +164,28 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
             await Member.deleteMany({
                 project: request.params.id
             });
 
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
+            await Task.deleteMany({
+                project: request.params.id
+            });
+
+            if (projectAuthorization.project.image) {
+                await dbService.deleteFile(FileCategory.Images, projectAuthorization.project.image.toString());
             }
+
+            // using global.Promise to avoid getting the typescript warning suggesting that it needs to be imported.
+            await global.Promise.all((projectAuthorization.project.attachments as Types.ObjectId[])
+                .map((attachment) => dbService.deleteFile(FileCategory.Attachments, attachment.toString())));
 
             await projectAuthorization.project.deleteOne();
 
             response.status(200).send('project was successfully deleted');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -188,11 +195,12 @@ class ProjectsController {
             try {
 
                 if (error) {
-                    return response.status(400).send(error);
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 if (!request.file) {
-                    return response.status(400).send('file is not sent');
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
@@ -200,14 +208,6 @@ class ProjectsController {
                     request.params.id,
                     ProjectOperationRole.Admin
                 );
-
-                if (!projectAuthorization.isAuthorized) {
-                    return response.status(401).send('permission denied, please contact the project admin');
-                }
-
-                if (!projectAuthorization.project) {
-                    return response.status(400).send('project does not exist');
-                }
 
                 const fileOptions: FileOptions = {
                     gridFSBucketOpenUploadStreamOptions: {
@@ -228,13 +228,13 @@ class ProjectsController {
 
                 if (oldImageId) {
 
-                    await dbService.deleteFile(FileCategory.Images, oldImageId);
+                    await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
                 }
 
                 response.status(201).send('project image was successfully uploaded');
             } catch (error) {
 
-                response.status(500).send(error);
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
             }
         });
     }
@@ -249,24 +249,18 @@ class ProjectsController {
                 ProjectOperationRole.Admin
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            if (!projectAuthorization.project) {
-                return response.status(400).send('project does not exist');
-            }
-
             await dbService.deleteFile(FileCategory.Images, request.params.fileId);
 
             await projectAuthorization.project.updateOne({
-                image: undefined
+                $unset: {
+                    image: 1
+                }
             });
 
             response.status(201).send('project image was successfully removed');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -280,7 +274,78 @@ class ProjectsController {
             fileStream.stream.pipe(response);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
+    async uploadProjectAttachment(request: Auth0Request, response: Response) {
+
+        multerMiddleware.attachmentMulter('attachment')(request, response, async (error: any) => {
+            try {
+
+                if (error) {
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
+
+                if (!request.file) {
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
+
+                const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                    request.user.sub,
+                    request.params.id,
+                    ProjectOperationRole.Admin
+                );
+
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            project: projectAuthorization.project._id
+                        }
+                    }
+                };
+
+                const fileUploadResult: FileUploadResult =
+                    await dbService.saveFile(FileCategory.Attachments, request.file, fileOptions);
+
+                await projectAuthorization.project.updateOne({
+                    $push: {
+                        attachments: fileUploadResult.id
+                    }
+                });
+
+                response.status(201).send('project attachment was successfully uploaded');
+            } catch (error) {
+
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
+            }
+        });
+    }
+
+
+    async deleteProjectAttachment(request: Auth0Request, response: Response) {
+
+        try {
+
+            const projectAuthorization: ProjectAuthorization = await projectAuthorizationService.authorize(
+                request.user.sub,
+                request.params.id,
+                ProjectOperationRole.Admin
+            );
+
+            await dbService.deleteFile(FileCategory.Attachments, request.params.fileId);
+
+            await projectAuthorization.project.updateOne({
+                $pull: {
+                    attachments: request.params.fileId
+                }
+            });
+
+            response.status(201).send('project attachment was successfully removed');
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -294,7 +359,7 @@ class ProjectsController {
             fileStream.stream.pipe(response);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 }

@@ -3,9 +3,11 @@ import {configService} from "./config.service";
 import {winstonService} from "./winston.service";
 import {GridFSBucket, GridFSBucketOpenUploadStreamOptions} from "mongodb";
 import {Map} from "typescript";
-import {FileCategory, CustomError, FileOptions, FileStream, FileUploadResult} from "./types.service";
 import {Readable} from "stream";
 import {gridFSModelBuilder} from "./gridfs-model-builder.service";
+import {GenericError, NotFoundError} from "../types/errors";
+import {FileCategory} from "../types/enums";
+import {FileOptions, FileStream, FileUploadResult} from "../types/interfaces";
 
 class DbService {
     private mongooseInstance: mongoose.Mongoose | null;
@@ -18,7 +20,7 @@ class DbService {
     connectDB() {
 
         if (this.mongooseInstance) {
-            throw new CustomError('multiple database initializations')
+            throw new GenericError('multiple database initializations')
         }
 
         const dbOptions = {
@@ -58,8 +60,7 @@ class DbService {
 
             uploadStream.on('error', () => reject('error in uploading the file to database'));
             uploadStream.on('finish', () => resolve({
-                id: uploadStream.id.toString(),
-                message: 'file was successfully uploaded'
+                id: uploadStream.id.toString()
             }));
         });
     }
@@ -85,7 +86,7 @@ class DbService {
         }).toArray();
 
         if (foundFiles.length === 0) {
-            throw new CustomError('file does not exist');
+            throw new NotFoundError('file does not exist');
         }
 
         return {
@@ -102,7 +103,7 @@ class DbService {
             bucket = this.gridFSBuckets.get(fileCategory);
         } else {
             if (!this.mongooseInstance) {
-                throw new CustomError('database is disconnected');
+                throw new GenericError('database is disconnected');
             }
 
             bucket = DbService.createGridFSBucket(this.mongooseInstance, fileCategory);
@@ -110,7 +111,7 @@ class DbService {
         }
 
         if (!bucket) {
-            throw new CustomError('bucket is not defined');
+            throw new GenericError('bucket is not defined');
         }
 
         return bucket;

@@ -1,13 +1,11 @@
-import {
-    Auth0Request,
-    ProjectAuthorization,
-    ProjectAuthorizationByTask,
-    ProjectOperationRole
-} from "../../common/services/types.service";
 import {Response} from "express";
 import {Task} from "../models/tasks.model";
 import {projectAuthorizationService} from "../../projects/services/project-authorization.service";
 import {Member} from "../../members/models/members.model";
+import {Auth0Request, ProjectAuthorization, ProjectAuthorizationByTask} from "../../common/types/interfaces";
+import {ProjectOperationRole} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError, NotFoundError} from "../../common/types/errors";
 
 class TasksController {
     async createTask(request: Auth0Request, response: Response) {
@@ -18,30 +16,22 @@ class TasksController {
                 ProjectOperationRole.Developer
             );
 
-            if (!projectAuthorization.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            const project = projectAuthorization.project;
-
-            if (!project) {
-                return response.status(404).send('project does not exist');
-            }
-
             let taskData = {
                 ...request.body
             };
 
             if (request.body.owner) {
 
-                if (!project.members.includes(request.body.owner)) {
-                    return response.status(400).send('owner should be one of the members of the project');
+                if (!projectAuthorization.project.members.includes(request.body.owner)) {
+                    const error = new BadRequestError('owner should be one of the members of the project');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const owner = await Member.findById(request.body.owner);
 
                 if (!owner) {
-                    return response.status(404).send('owner does not exist');
+                    const error = new NotFoundError('owner does not exist');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 taskData = {
@@ -52,7 +42,7 @@ class TasksController {
 
             const task = await Task.create(taskData);
 
-            await project.updateOne({
+            await projectAuthorization.project.updateOne({
                 $push: {
                     tasks: task._id
                 }
@@ -61,7 +51,7 @@ class TasksController {
             response.status(201).send(task);
         }
         catch (error) {
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -72,7 +62,7 @@ class TasksController {
             response.status(200).send(tasks);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -94,7 +84,7 @@ class TasksController {
             response.status(200).send(task);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -107,36 +97,22 @@ class TasksController {
                 ProjectOperationRole.Developer
             );
 
-            if (!projectAuthorizationByTask.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
-
-            const task = projectAuthorizationByTask.task;
-
-            if (!task) {
-                return response.status(404).send("task does not exist");
-            }
-
-            const project = projectAuthorizationByTask.project;
-
-            if (!project) {
-                return response.status(404).send('project does not exist');
-            }
-
             let taskData = {
                 ...request.body
             };
 
             if (request.body.owner) {
 
-                if (!project.members.includes(request.body.owner)) {
-                    return response.status(400).send('owner should be one of the members of the project');
+                if (!projectAuthorizationByTask.project.members.includes(request.body.owner)) {
+                    const error = new BadRequestError('owner should be one of the members of the project');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 const owner = await Member.findById(request.body.owner);
 
                 if (!owner) {
-                    return response.status(404).send('owner does not exist');
+                    const error = new NotFoundError('owner does not exist');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
                 }
 
                 taskData = {
@@ -145,7 +121,7 @@ class TasksController {
                 };
             }
 
-            await task.updateOne(
+            await projectAuthorizationByTask.task.updateOne(
                 taskData,
                 {
                     runValidators: true
@@ -155,7 +131,7 @@ class TasksController {
             response.status(200).send('task was successfully updated');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -167,34 +143,18 @@ class TasksController {
                 ProjectOperationRole.Developer
             );
 
-            if (!projectAuthorizationByTask.isAuthorized) {
-                return response.status(401).send('permission denied, please contact the project admin');
-            }
+            await projectAuthorizationByTask.task.deleteOne();
 
-            const task = projectAuthorizationByTask.task;
-
-            if (!task) {
-                return response.status(404).send('task does not exist');
-            }
-
-            await task.deleteOne();
-
-            const project = projectAuthorizationByTask.project;
-
-            if (!project) {
-                return response.status(404).send('project does not exist');
-            }
-
-            await project.updateOne({
+            await projectAuthorizationByTask.project.updateOne({
                 $pull: {
-                    tasks: task._id
+                    tasks: projectAuthorizationByTask.task._id
                 }
             });
 
             response.status(200).send('task was successfully deleted');
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 }

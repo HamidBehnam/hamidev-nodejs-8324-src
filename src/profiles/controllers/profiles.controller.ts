@@ -1,10 +1,16 @@
-import {Auth0MetaData, Auth0Request} from "../../common/services/types.service";
 import {NextFunction, Response} from "express";
 import {Profile, profilesProjection} from "../models/profiles.model";
 import {authService} from "../../common/services/auth.service";
 import {Email} from "../../emails/models/emails.model";
 import {configService} from "../../common/services/config.service";
 import {profilesQueryService} from "../services/profiles-query.service";
+import {multerMiddleware} from "../../common/middlewares/multer.middleware";
+import {dbService} from "../../common/services/db.service";
+import {Types} from "mongoose";
+import {Auth0MetaData, Auth0Request, FileOptions, FileStream, FileUploadResult} from "../../common/types/interfaces";
+import {FileCategory} from "../../common/types/enums";
+import {errorHandlerService} from "../../common/services/error-handler.service";
+import {BadRequestError, NotFoundError} from "../../common/types/errors";
 
 class ProfilesController {
      async createProfile(request: Auth0Request, response: Response, next: NextFunction) {
@@ -13,7 +19,8 @@ class ProfilesController {
             const existingProfile = await Profile.findOne({userId: request.user.sub});
 
             if (existingProfile) {
-                response.status(400).send('user already has a profile');
+                const error = new BadRequestError('user already has a profile');
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
                 return next();
             }
 
@@ -50,7 +57,7 @@ class ProfilesController {
             });
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -63,12 +70,13 @@ class ProfilesController {
                 .limit(queryParams.limit)
                 .skip(--queryParams.page * queryParams.limit)
                 .sort(queryParams.sort)
-                .select(profilesProjection);
+                .select(profilesProjection)
+                .populate('image', 'filename metadata uploadDate');
 
             response.status(200).send(profiles);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -80,7 +88,7 @@ class ProfilesController {
             response.status(200).send(profile);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
 
@@ -95,13 +103,14 @@ class ProfilesController {
              });
 
              if (!updatedProfile) {
-                 return response.status(404).send("the profile does not exist or does not belong to the user");
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
              }
 
              response.status(200).send(updatedProfile);
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 
@@ -113,13 +122,18 @@ class ProfilesController {
              });
 
              if (!deletedProfile) {
-                 return response.status(404).send("the profile does not exist or does not belong to the user");
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
+             }
+
+             if (deletedProfile.image) {
+                 await dbService.deleteFile(FileCategory.Images, deletedProfile.image.toString());
              }
 
              response.status(200).send("profile was successfully deleted");
          } catch (error) {
 
-             response.status(500).send(error);
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
          }
     }
 
@@ -130,8 +144,104 @@ class ProfilesController {
             response.status(200).send(userProfiles);
         } catch (error) {
 
-            response.status(500).send(error);
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
+    }
+
+    async uploadProfileImage(request: Auth0Request, response: Response) {
+
+        multerMiddleware.imageMulter('image')(request, response, async (error: any) => {
+            try {
+
+                if (error) {
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
+
+                if (!request.file) {
+                    const error = new BadRequestError('file is not sent');
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
+
+                const profile = await Profile.findOne({
+                    _id: request.params.id,
+                    userId: request.user.sub
+                });
+
+                if (!profile) {
+                    const error = new NotFoundError("profile does not exist or does not belong to the user");
+                    return response.status(errorHandlerService.getStatusCode(error)).send(error);
+                }
+
+                const fileOptions: FileOptions = {
+                    gridFSBucketOpenUploadStreamOptions: {
+                        metadata: {
+                            profile: profile._id
+                        }
+                    }
+                };
+
+                const fileUploadResult: FileUploadResult =
+                    await dbService.saveFile(FileCategory.Images, request.file, fileOptions);
+
+                const oldImageId = profile.image;
+
+                await profile.updateOne({
+                    image: fileUploadResult.id
+                });
+
+                if (oldImageId) {
+
+                    await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
+                }
+
+                response.status(201).send('profile image was successfully uploaded');
+            } catch (error) {
+
+                response.status(errorHandlerService.getStatusCode(error)).send(error);
+            }
+        });
+    }
+
+    async deleteProfileImage(request: Auth0Request, response: Response) {
+         try {
+
+             const profile = await Profile.findOne({
+                 _id: request.params.id,
+                 userId: request.user.sub
+             });
+
+             if (!profile) {
+                 const error = new NotFoundError('the profile does not exist or does not belong to the user');
+                 return response.status(errorHandlerService.getStatusCode(error)).send(error);
+             }
+
+             await dbService.deleteFile(FileCategory.Images, request.params.fileId);
+
+             await profile.updateOne({
+                 $unset: {
+                     image: 1
+                 }
+             });
+
+             response.status(201).send('profile image was successfully removed');
+         } catch (error) {
+
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
+         }
+    }
+
+    async getProfileImage(request: Auth0Request, response: Response) {
+         try {
+
+             // loading the profile data before loading its file is not needed atm but the profile id
+             // will be in request.params.id
+             const fileStream: FileStream = await dbService.getFileStream(FileCategory.Images, request.params.fileId);
+             response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
+             fileStream.stream.pipe(response);
+         } catch (error) {
+
+             response.status(errorHandlerService.getStatusCode(error)).send(error);
+         }
     }
 }
 

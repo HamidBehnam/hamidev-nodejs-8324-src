@@ -1,4 +1,5 @@
 import express = require("express");
+import cors = require("cors");
 import http = require("http");
 import {Application} from "express";
 import {dbService} from "./common/services/db.service";
@@ -20,6 +21,11 @@ const main: Application = express();
 app.use(express.json());
 // https://stackoverflow.com/a/25471936/2281403
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+    origin: configService.cors_allowed_origins
+}));
+
 app.use(morganMiddleware.morgan);
 app.use(profilesRoutesConfig());
 app.use(projectsRoutesConfig());

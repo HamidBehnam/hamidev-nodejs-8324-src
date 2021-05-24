@@ -23,6 +23,7 @@ class ConfigService {
     private readonly _machine_to_machine_client_secret: string;
     private readonly _auth0_custom_rule_namespace: string;
     private readonly _sendgrid_api_key: string;
+    private readonly _cors_allowed_origins: string;
 
     constructor() {
         this._port = process.env.PORT;
@@ -33,6 +34,7 @@ class ConfigService {
         this._machine_to_machine_client_secret = process.env.MACHINE_TO_MACHINE_CLIENT_SECRET as string;
         this._auth0_custom_rule_namespace = process.env.AUTH0_CUSTOM_RULE_NAMESPACE as string;
         this._sendgrid_api_key = process.env.SENDGRID_API_KEY as string;
+        this._cors_allowed_origins = process.env.CORS_ALLOWED_ORIGINS as string;
     }
 
 
@@ -66,6 +68,11 @@ class ConfigService {
 
     get sendgrid_api_key(): string {
         return this._sendgrid_api_key;
+    }
+
+    get cors_allowed_origins(): RegExp[] {
+        return this._cors_allowed_origins.split(',')
+            .map(pattern => new RegExp(pattern.trim()));
     }
 }
 

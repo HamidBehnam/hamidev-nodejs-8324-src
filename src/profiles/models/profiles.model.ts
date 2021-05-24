@@ -7,6 +7,7 @@ export interface IProfile extends Document{
     firstName: string;
     lastName: string;
     description: string;
+    originalImageLink: string;
     image: Types.ObjectId | IGridFSFile;
 }
 
@@ -27,6 +28,10 @@ const ProfileSchema: Schema = new Schema({
         type: String,
         required: true
     },
+    originalImageLink: {
+        type: String,
+        required: true
+    },
     image: {
         type: Types.ObjectId,
         ref: 'Image'
@@ -44,6 +49,7 @@ export const profilesProjection = {
     lastName: true,
     firstName: true,
     fullName: true,
+    originalImageLink: true,
     image: true
 };
 

@@ -26,7 +26,8 @@ class ProfilesController {
 
             const profileData = {
                 ...request.body,
-                userId: request.user.sub
+                userId: request.user.sub,
+                originalImageLink: request.user[`${configService.auth0_custom_rule_namespace}original_image`]
             };
 
             const emailData = {

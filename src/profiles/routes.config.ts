@@ -11,7 +11,7 @@ export const profilesRoutesConfig = (): Router => {
 
     profileRouter.post('/profiles', [
         authMiddleware.checkJwt,
-        fieldsMiddleware.disallow(['userId']),
+        fieldsMiddleware.disallow(['userId', 'originalImageLink']),
         profilesController.createProfile
     ]);
 
@@ -28,6 +28,7 @@ export const profilesRoutesConfig = (): Router => {
 
     profileRouter.patch('/profiles/:id', [
         authMiddleware.checkJwt,
+        fieldsMiddleware.disallow(['userId', 'originalImageLink']),
         profilesController.updateProfile
     ]);
 

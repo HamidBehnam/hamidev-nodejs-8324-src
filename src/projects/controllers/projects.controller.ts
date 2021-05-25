@@ -56,6 +56,7 @@ class ProjectsController {
 
             const queryParams = projectsQueryService.getProjectsQueryParams(request.query);
 
+            // Another option to join the collections is MongoDB's $lookup queries. It also helps to do the reverse joins as well.
             const projects = await Project.find({})
                 .limit(queryParams.limit)
                 .skip(--queryParams.page * queryParams.limit)

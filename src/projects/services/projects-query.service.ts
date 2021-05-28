@@ -25,16 +25,16 @@ class ProjectsQueryService {
                     let: { members: '$members' },
                     pipeline: [
                         { $match: { $expr: { $and: [ { $in: ['$_id', '$$members'] }, { $eq: ['$userId', userId] } ] } } },
-                        { $project: { role: 1, _id: 0 } }
+                        { $project: { _id: 0, viewerAssociatedRole: '$role' } } // in case there's no need for renaming the field you can use role: 1 instead
                     ],
                     as: 'viewerAssociation'
                 }
             },
             {
-                $unwind: {
-                    path: '$viewerAssociation',
-                    preserveNullAndEmptyArrays: true
-                }
+                $replaceRoot: { newRoot: { $mergeObjects: [ { $arrayElemAt: [ "$viewerAssociation", 0 ] }, "$$ROOT" ] } }
+            },
+            {
+                $project: { viewerAssociation: 0 }
             },
             {
                 $lookup: {
@@ -106,6 +106,13 @@ class ProjectsQueryService {
                     as: 'attachments'
                 }
             },
+            {
+                $addFields: {
+                    viewerIsCreator: {
+                        $eq: ['$createdBy', userId]
+                    }
+                }
+            }
         ];
 
         // TODO: similar query with mongoose populate, kept for the reference

@@ -67,12 +67,11 @@ class ProfilesController {
 
             const queryParams = profilesQueryService.getProfilesQueryParams(request.query);
 
-            const profiles = await Profile.find({})
+            const profiles = await Profile
+                .aggregate(profilesQueryService.getProfilesAggregateQuery(request.user.sub))
                 .limit(queryParams.limit)
                 .skip(--queryParams.page * queryParams.limit)
-                .sort(queryParams.sort)
-                .select(profilesProjection)
-                .populate('image', 'filename metadata uploadDate');
+                .sort(queryParams.sort);
 
             response.status(200).send(profiles);
         } catch (error) {
@@ -84,9 +83,10 @@ class ProfilesController {
     async getProfile(request: Auth0Request, response: Response) {
         try {
 
-            const profile = await Profile.findById(request.params.id);
+            const profile = await Profile
+                .aggregate(profilesQueryService.getProfileAggregateQuery(request.user.sub, request.params.id));
 
-            response.status(200).send(profile);
+            response.status(200).send(profile.pop());
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);

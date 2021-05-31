@@ -48,7 +48,6 @@ export const profilesRoutesConfig = (): Router => {
     ]);
 
     profileRouter.get('/profiles/:id/images/:fileId', [
-        authMiddleware.checkJwt,
         profilesController.getProfileImage
     ]);
 

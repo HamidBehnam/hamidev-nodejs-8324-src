@@ -46,7 +46,6 @@ export const projectsRoutesConfig = (): Router => {
     ]);
 
     projectsRouter.get('/projects/:id/images/:fileId', [
-        authMiddleware.checkJwt,
         projectsController.getProjectImage
     ]);
 
@@ -61,7 +60,6 @@ export const projectsRoutesConfig = (): Router => {
     ]);
 
     projectsRouter.get('/projects/:id/attachments/:fileId', [
-        authMiddleware.checkJwt,
         projectsController.getProjectAttachment
     ]);
 

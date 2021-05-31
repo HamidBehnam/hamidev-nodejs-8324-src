@@ -56,55 +56,19 @@ class ProjectsController {
 
             const queryParams = projectsQueryService.getProjectsQueryParams(request.query);
 
-            const projects = await Project.find({})
-                .limit(queryParams.limit)
-                .skip(--queryParams.page * queryParams.limit)
-                .sort(queryParams.sort)
-                .populate([
-                    {
-                        path: 'creatorProfile',
-                        model: 'Profile',
-                        select: '-__v'
-                    },{
-                        path: 'members',
-                        model: 'Member',
-                        populate: [{
-                            path: 'profile',
-                            model: 'Profile',
-                            select: '-__v'
-                        }],
-                        select: '-__v -project'
-                    }, {
-                        path: 'tasks',
-                        model: 'Task',
-                        select: '-__v',
-                        populate: [{
-                            path: 'owner',
-                            model: 'Member',
-                            select: 'profile',
-                            populate: [{
-                                path: 'profile',
-                                model: 'Profile',
-                                select: '-__v'
-                            }]
-                        }]
-                    }, {
-                        path: 'image',
-                        model: 'Image'
-                    }, {
-                        path: 'attachments',
-                        model: 'Attachment'
-                    }
-                ]);
+            const projects = await Project.aggregate(projectsQueryService.getProjectsAggregateQuery(request.user.sub))
+            .sort(queryParams.sort)
+            .limit(queryParams.limit)
+            .skip(--queryParams.page * queryParams.limit);
 
-            sendgridService
-                .sendEmail(
-                    {email: "xxxxxx@gmail.com", name: "Hamid"},
-                    {email: "info@hamidbehnam.com", name: "Project Management App"},
-                    "d-bb86afa964f741f88da1c473b3382fe2"
-                )
-                .then(() => winstonService.Logger.info('Email sent'))
-                .catch(error => winstonService.Logger.error(error));
+            // sendgridService
+            //     .sendEmail(
+            //         {email: "xxxxxx@gmail.com", name: "Hamid"},
+            //         {email: "info@hamidbehnam.com", name: "Project Management App"},
+            //         "d-bb86afa964f741f88da1c473b3382fe2"
+            //     )
+            //     .then(() => winstonService.Logger.info('Email sent'))
+            //     .catch(error => winstonService.Logger.error(error));
 
             response.status(200).send(projects);
         } catch (error) {

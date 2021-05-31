@@ -53,6 +53,8 @@ export const profilesProjection = {
     image: true
 };
 
+// The virtual fields are not available in aggregate queries, so if you want to use the aggregate queries, you'll
+// need to add these fields in the aggregate query using $addFields pipeline.
 ProfileSchema.virtual('fullName').get(function (this: IProfile) {
     return `${this.firstName} ${this.lastName}`;
 });

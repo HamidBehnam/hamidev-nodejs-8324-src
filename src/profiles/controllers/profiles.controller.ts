@@ -131,7 +131,9 @@ class ProfilesController {
                  await dbService.deleteFile(FileCategory.Images, deletedProfile.image.toString());
              }
 
-             response.status(200).send("profile was successfully deleted");
+             response.status(200).send({
+                 message: 'profile was successfully deleted'
+             });
          } catch (error) {
 
              response.status(errorHandlerService.getStatusCode(error)).send(error);

@@ -197,7 +197,9 @@ class ProfilesController {
                     await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
                 }
 
-                response.status(201).send('profile image was successfully uploaded');
+                response.status(201).send({
+                    id: fileUploadResult.id
+                });
             } catch (error) {
 
                 response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -226,7 +228,9 @@ class ProfilesController {
                  }
              });
 
-             response.status(201).send('profile image was successfully removed');
+             response.status(201).send({
+                 message: 'profile image was successfully removed'
+             });
          } catch (error) {
 
              response.status(errorHandlerService.getStatusCode(error)).send(error);

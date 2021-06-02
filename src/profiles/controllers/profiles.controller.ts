@@ -198,7 +198,7 @@ class ProfilesController {
                 }
 
                 response.status(201).send({
-                    message: 'profile image was successfully uploaded'
+                    id: fileUploadResult.id
                 });
             } catch (error) {
 

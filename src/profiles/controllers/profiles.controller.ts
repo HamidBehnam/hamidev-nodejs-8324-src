@@ -52,10 +52,7 @@ class ProfilesController {
 
             await authService.updateMetaData(request.user.sub, metadata);
 
-            response.status(201).send({
-                userProfile,
-                userEmail
-            });
+            response.status(201).send(userProfile);
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -131,7 +128,9 @@ class ProfilesController {
                  await dbService.deleteFile(FileCategory.Images, deletedProfile.image.toString());
              }
 
-             response.status(200).send("profile was successfully deleted");
+             response.status(200).send({
+                 message: 'profile was successfully deleted'
+             });
          } catch (error) {
 
              response.status(errorHandlerService.getStatusCode(error)).send(error);

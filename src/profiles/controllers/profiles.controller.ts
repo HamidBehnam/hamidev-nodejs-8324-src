@@ -52,10 +52,7 @@ class ProfilesController {
 
             await authService.updateMetaData(request.user.sub, metadata);
 
-            response.status(201).send({
-                userProfile,
-                userEmail
-            });
+            response.status(201).send(userProfile);
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);

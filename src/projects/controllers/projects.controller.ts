@@ -80,18 +80,10 @@ class ProjectsController {
     async getProject(request: Auth0Request, response: Response) {
         try {
 
-            const project = await Project.findById(request.params.id).populate({
-                path: 'members',
-                model: 'Member',
-                populate: [{
-                    path: 'profile',
-                    model: 'Profile',
-                    select: '-__v'
-                }],
-                select: '-__v -project'
-            });
+            const project = await Project
+                .aggregate(projectsQueryService.getProjectAggregateQuery(request.user.sub, request.params.id));
 
-            response.status(200).send(project);
+            response.status(200).send(project.pop());
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);

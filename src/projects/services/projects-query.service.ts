@@ -1,3 +1,5 @@
+import { Types } from 'mongoose';
+
 class ProjectsQueryService {
     private readonly getProjectsQueryParamsDefaults = {
         limit: 10,
@@ -5,19 +7,7 @@ class ProjectsQueryService {
         sort: 'createdAt'
     };
 
-    getProjectsQueryParams(queryParams: any) {
-        const getProjectsQueryParams = {
-            ...this.getProjectsQueryParamsDefaults,
-            ...queryParams
-        };
-
-        getProjectsQueryParams.limit = + getProjectsQueryParams.limit;
-        getProjectsQueryParams.page = + getProjectsQueryParams.page;
-
-        return getProjectsQueryParams;
-    }
-
-    getProjectsAggregateQuery(userId: string) {
+    private static getGenericQuery(userId: string) {
         return [
             {
                 $lookup: {
@@ -36,6 +26,46 @@ class ProjectsQueryService {
             {
                 $project: { viewerAssociation: 0 }
             },
+            {
+                $lookup: {
+                    from: 'profiles',
+                    localField: 'creatorProfile',
+                    foreignField: '_id',
+                    as: 'creatorProfile'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$creatorProfile',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $lookup: {
+                    from: 'images.files',
+                    localField: 'image',
+                    foreignField: '_id',
+                    as: 'image'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$image',
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $addFields: {
+                    viewerIsCreator: {
+                        $eq: ['$createdBy', userId]
+                    }
+                }
+            }
+        ];
+    }
+
+    private static getDetailQuery() {
+        return [
             {
                 $lookup: {
                     from: 'members',
@@ -72,90 +102,43 @@ class ProjectsQueryService {
             },
             {
                 $lookup: {
-                    from: 'profiles',
-                    localField: 'creatorProfile',
-                    foreignField: '_id',
-                    as: 'creatorProfile'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$creatorProfile',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $lookup: {
-                    from: 'images.files',
-                    localField: 'image',
-                    foreignField: '_id',
-                    as: 'image'
-                }
-            },
-            {
-                $unwind: {
-                    path: '$image',
-                    preserveNullAndEmptyArrays: true
-                }
-            },
-            {
-                $lookup: {
                     from: 'attachments.files',
                     localField: 'attachments',
                     foreignField: '_id',
                     as: 'attachments'
                 }
-            },
-            {
-                $addFields: {
-                    viewerIsCreator: {
-                        $eq: ['$createdBy', userId]
-                    }
-                }
             }
         ];
+    }
 
-        // TODO: similar query with mongoose populate, kept for the reference
-        // const projects = await Project.find({})
-        //     .limit(queryParams.limit)
-        //     .skip(--queryParams.page * queryParams.limit)
-        //     .sort(queryParams.sort)
-        //     .populate([
-        //         {
-        //             path: 'creatorProfile',
-        //             model: 'Profile',
-        //             select: '-__v'
-        //         },{
-        //             path: 'members',
-        //             model: 'Member',
-        //             populate: [{
-        //                 path: 'profile',
-        //                 model: 'Profile',
-        //                 select: '-__v'
-        //             }],
-        //             select: '-__v -project'
-        //         }, {
-        //             path: 'tasks',
-        //             model: 'Task',
-        //             select: '-__v',
-        //             populate: [{
-        //                 path: 'owner',
-        //                 model: 'Member',
-        //                 select: 'profile',
-        //                 populate: [{
-        //                     path: 'profile',
-        //                     model: 'Profile',
-        //                     select: '-__v'
-        //                 }]
-        //             }]
-        //         }, {
-        //             path: 'image',
-        //             model: 'Image'
-        //         }, {
-        //             path: 'attachments',
-        //             model: 'Attachment'
-        //         }
-        //     ]);
+    getProjectsQueryParams(queryParams: any) {
+        const getProjectsQueryParams = {
+            ...this.getProjectsQueryParamsDefaults,
+            ...queryParams
+        };
+
+        getProjectsQueryParams.limit = + getProjectsQueryParams.limit;
+        getProjectsQueryParams.page = + getProjectsQueryParams.page;
+
+        return getProjectsQueryParams;
+    }
+
+    getProjectsAggregateQuery(userId: string) {
+        return [
+            ...ProjectsQueryService.getGenericQuery(userId)
+        ];
+    }
+
+    getProjectAggregateQuery(userId: string, projectId: string) {
+        return [
+            {
+                $match: {
+                    _id: Types.ObjectId(projectId)
+                }
+            },
+            ...ProjectsQueryService.getGenericQuery(userId),
+            ...ProjectsQueryService.getDetailQuery()
+        ];
     }
 }
 

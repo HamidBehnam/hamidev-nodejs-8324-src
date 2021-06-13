@@ -90,6 +90,19 @@ class ProjectsController {
         }
     }
 
+    async getProjectMembers(request: Auth0Request, response: Response) {
+        try {
+
+            const members = await Member
+                .aggregate(projectsQueryService.getProjectMembersAggregateQuery(request.params.id));
+
+            response.status(200).send(members);
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
     async updateProject(request: Auth0Request, response: Response) {
         try {
 

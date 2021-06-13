@@ -140,6 +140,48 @@ class ProjectsQueryService {
             ...ProjectsQueryService.getDetailQuery()
         ];
     }
+
+    getProjectMembersAggregateQuery(projectId: string) {
+        return [
+            {
+                $match: {
+                    project: Types.ObjectId(projectId)
+                },
+            },
+            {
+                $lookup: {
+                    from: 'profiles',
+                    let: {
+                        profile: '$profile'
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$_id', '$$profile']
+                                }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'images.files',
+                                localField: 'image',
+                                foreignField: '_id',
+                                as: 'image'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$image',
+                                preserveNullAndEmptyArrays: true
+                            }
+                        }
+                    ],
+                    as: 'profile'
+                }
+            }
+        ];
+    }
 }
 
 export const projectsQueryService = new ProjectsQueryService();

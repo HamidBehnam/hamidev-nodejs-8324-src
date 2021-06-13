@@ -68,5 +68,9 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.deleteProjectAttachment
     ]);
 
+    projectsRouter.get('/projects/:id/members', [
+        projectsController.getProjectMembers
+    ]);
+
     return projectsRouter;
 };

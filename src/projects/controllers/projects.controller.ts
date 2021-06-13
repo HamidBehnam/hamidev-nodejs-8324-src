@@ -357,6 +357,19 @@ class ProjectsController {
             response.status(errorHandlerService.getStatusCode(error)).send(error);
         }
     }
+
+    async getProjectAttachments(request: Auth0Request, response: Response) {
+        try {
+
+            const projects = await Project
+                .aggregate(projectsQueryService.getProjectAttachmentsAggregateQuery(request.params.id));
+
+            response.status(200).send(projects.pop());
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
 }
 
 export const projectsController = new ProjectsController();

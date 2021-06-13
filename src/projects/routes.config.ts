@@ -68,6 +68,10 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.getProjectAttachment
     ]);
 
+    projectsRouter.get('/projects/:id/attachments', [
+        projectsController.getProjectAttachments
+    ]);
+
     projectsRouter.delete('/projects/:id/attachments/:fileId', [
         authMiddleware.checkJwt,
         projectsController.deleteProjectAttachment

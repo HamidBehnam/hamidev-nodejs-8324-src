@@ -271,6 +271,30 @@ class ProjectsQueryService {
             }
         ];
     }
+
+    getProjectAttachmentsAggregateQuery(projectId: string) {
+        return [
+            {
+                $match: {
+                    _id: Types.ObjectId(projectId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'attachments.files',
+                    localField: 'attachments',
+                    foreignField: '_id',
+                    as: 'attachments'
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    attachments: 1
+                }
+            }
+        ];
+    }
 }
 
 export const projectsQueryService = new ProjectsQueryService();

@@ -136,6 +136,17 @@ class ProjectsQueryService {
                     _id: Types.ObjectId(projectId)
                 }
             },
+            ...ProjectsQueryService.getGenericQuery(userId)
+        ];
+    }
+
+    getProjectVerboseAggregateQuery(userId: string, projectId: string) {
+        return [
+            {
+                $match: {
+                    _id: Types.ObjectId(projectId)
+                }
+            },
             ...ProjectsQueryService.getGenericQuery(userId),
             ...ProjectsQueryService.getDetailQuery()
         ];

@@ -27,6 +27,11 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.getProject
     ]);
 
+    projectsRouter.get('/projects/:id/verbose', [
+        authMiddleware.checkJwt,
+        projectsController.getProjectVerbose
+    ]);
+
     projectsRouter.patch('/projects/:id', [
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be

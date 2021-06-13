@@ -90,6 +90,19 @@ class ProjectsController {
         }
     }
 
+    async getProjectVerbose(request: Auth0Request, response: Response) {
+        try {
+
+            const project = await Project
+                .aggregate(projectsQueryService.getProjectVerboseAggregateQuery(request.user.sub, request.params.id));
+
+            response.status(200).send(project.pop());
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
     async getProjectMembers(request: Auth0Request, response: Response) {
         try {
 

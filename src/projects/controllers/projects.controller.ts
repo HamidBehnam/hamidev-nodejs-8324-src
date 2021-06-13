@@ -116,6 +116,19 @@ class ProjectsController {
         }
     }
 
+    async getProjectTasks(request: Auth0Request, response: Response) {
+        try {
+
+            const tasks = await Task
+                .aggregate(projectsQueryService.getProjectTasksAggregateQuery(request.params.id));
+
+            response.status(200).send(tasks);
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
     async updateProject(request: Auth0Request, response: Response) {
         try {
 

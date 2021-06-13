@@ -77,5 +77,9 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.getProjectMembers
     ]);
 
+    projectsRouter.get('/projects/:id/tasks', [
+        projectsController.getProjectTasks
+    ]);
+
     return projectsRouter;
 };

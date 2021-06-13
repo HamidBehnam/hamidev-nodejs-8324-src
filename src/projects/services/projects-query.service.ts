@@ -190,6 +190,84 @@ class ProjectsQueryService {
                     ],
                     as: 'profile'
                 }
+            },
+            {
+                $unwind: {
+                    path: '$profile',
+                    preserveNullAndEmptyArrays: true
+                }
+            }
+        ];
+    }
+
+    getProjectTasksAggregateQuery(projectId: string) {
+        return [
+            {
+                $match: {
+                    project: Types.ObjectId(projectId)
+                }
+            },
+            {
+                $lookup: {
+                    from: 'members',
+                    let: {
+                        owner: '$owner'
+                    },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $eq: ['$_id', '$$owner']
+                                }
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: 'profiles',
+                                let: {
+                                    profile: '$profile'
+                                },
+                                pipeline: [
+                                    {
+                                        $match: {
+                                            $expr: {
+                                                $eq: ['$_id', '$$profile']
+                                            }
+                                        }
+                                    },
+                                    {
+                                        $lookup: {
+                                            from: 'images.files',
+                                            localField: 'image',
+                                            foreignField: '_id',
+                                            as: 'image'
+                                        }
+                                    },
+                                    {
+                                        $unwind: {
+                                            path: '$image',
+                                            preserveNullAndEmptyArrays: true
+                                        }
+                                    }
+                                ],
+                                as: 'profile'
+                            }
+                        },
+                        {
+                            $unwind: {
+                                path: '$profile',
+                                preserveNullAndEmptyArrays: true
+                            }
+                        }
+                    ],
+                    as: 'owner'
+                }
+            },
+            {
+                $unwind: {
+                    path: '$owner',
+                    preserveNullAndEmptyArrays: true
+                }
             }
         ];
     }

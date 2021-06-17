@@ -177,7 +177,9 @@ class ProjectsController {
 
             await projectAuthorization.project.deleteOne();
 
-            response.status(200).send('project was successfully deleted');
+            response.status(200).send({
+                message: 'project was successfully deleted'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -226,7 +228,9 @@ class ProjectsController {
                     await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
                 }
 
-                response.status(201).send('project image was successfully uploaded');
+                response.status(201).send({
+                    id: fileUploadResult.id
+                });
             } catch (error) {
 
                 response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -252,7 +256,9 @@ class ProjectsController {
                 }
             });
 
-            response.status(201).send('project image was successfully removed');
+            response.status(201).send({
+                message: 'project image was successfully removed'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -310,7 +316,9 @@ class ProjectsController {
                     }
                 });
 
-                response.status(201).send('project attachment was successfully uploaded');
+                response.status(201).send({
+                    id: fileUploadResult.id
+                });
             } catch (error) {
 
                 response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -337,7 +345,9 @@ class ProjectsController {
                 }
             });
 
-            response.status(201).send('project attachment was successfully removed');
+            response.status(201).send({
+                message: 'project attachment was successfully removed'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);

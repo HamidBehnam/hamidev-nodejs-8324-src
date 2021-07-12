@@ -27,6 +27,11 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.getProject
     ]);
 
+    projectsRouter.get('/projects/:id/verbose', [
+        authMiddleware.checkJwt,
+        projectsController.getProjectVerbose
+    ]);
+
     projectsRouter.patch('/projects/:id', [
         authMiddleware.checkJwt,
         // the reason for disallowing 'members' and 'tasks' fields is to make sure members and tasks are gonna be
@@ -63,9 +68,21 @@ export const projectsRoutesConfig = (): Router => {
         projectsController.getProjectAttachment
     ]);
 
+    projectsRouter.get('/projects/:id/attachments', [
+        projectsController.getProjectAttachments
+    ]);
+
     projectsRouter.delete('/projects/:id/attachments/:fileId', [
         authMiddleware.checkJwt,
         projectsController.deleteProjectAttachment
+    ]);
+
+    projectsRouter.get('/projects/:id/members', [
+        projectsController.getProjectMembers
+    ]);
+
+    projectsRouter.get('/projects/:id/tasks', [
+        projectsController.getProjectTasks
     ]);
 
     return projectsRouter;

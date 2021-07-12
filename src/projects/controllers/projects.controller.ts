@@ -90,6 +90,45 @@ class ProjectsController {
         }
     }
 
+    async getProjectVerbose(request: Auth0Request, response: Response) {
+        try {
+
+            const project = await Project
+                .aggregate(projectsQueryService.getProjectVerboseAggregateQuery(request.user.sub, request.params.id));
+
+            response.status(200).send(project.pop());
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
+    async getProjectMembers(request: Auth0Request, response: Response) {
+        try {
+
+            const members = await Member
+                .aggregate(projectsQueryService.getProjectMembersAggregateQuery(request.params.id));
+
+            response.status(200).send(members);
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
+    async getProjectTasks(request: Auth0Request, response: Response) {
+        try {
+
+            const tasks = await Task
+                .aggregate(projectsQueryService.getProjectTasksAggregateQuery(request.params.id));
+
+            response.status(200).send(tasks);
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
     async updateProject(request: Auth0Request, response: Response) {
         try {
 
@@ -138,7 +177,9 @@ class ProjectsController {
 
             await projectAuthorization.project.deleteOne();
 
-            response.status(200).send('project was successfully deleted');
+            response.status(200).send({
+                message: 'project was successfully deleted'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -187,7 +228,9 @@ class ProjectsController {
                     await dbService.deleteFile(FileCategory.Images, (oldImageId as Types.ObjectId).toString());
                 }
 
-                response.status(201).send('project image was successfully uploaded');
+                response.status(201).send({
+                    id: fileUploadResult.id
+                });
             } catch (error) {
 
                 response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -213,7 +256,9 @@ class ProjectsController {
                 }
             });
 
-            response.status(201).send('project image was successfully removed');
+            response.status(201).send({
+                message: 'project image was successfully removed'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -271,7 +316,9 @@ class ProjectsController {
                     }
                 });
 
-                response.status(201).send('project attachment was successfully uploaded');
+                response.status(201).send({
+                    id: fileUploadResult.id
+                });
             } catch (error) {
 
                 response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -298,7 +345,9 @@ class ProjectsController {
                 }
             });
 
-            response.status(201).send('project attachment was successfully removed');
+            response.status(201).send({
+                message: 'project attachment was successfully removed'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
@@ -313,6 +362,19 @@ class ProjectsController {
             const fileStream: FileStream = await dbService.getFileStream(FileCategory.Attachments, request.params.fileId);
             response.header('Content-Disposition', `attachment; filename="${fileStream.file.filename}"`);
             fileStream.stream.pipe(response);
+        } catch (error) {
+
+            response.status(errorHandlerService.getStatusCode(error)).send(error);
+        }
+    }
+
+    async getProjectAttachments(request: Auth0Request, response: Response) {
+        try {
+
+            const projects = await Project
+                .aggregate(projectsQueryService.getProjectAttachmentsAggregateQuery(request.params.id));
+
+            response.status(200).send(projects.pop());
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);

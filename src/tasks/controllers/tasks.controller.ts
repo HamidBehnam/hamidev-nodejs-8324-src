@@ -121,6 +121,15 @@ class TasksController {
                 };
             }
 
+            if (request.body.owner === null) {
+                taskData = {
+                    ...taskData,
+                    $unset: {
+                        ownerUserId: 1
+                    }
+                }
+            }
+
             await projectAuthorizationByTask.task.updateOne(
                 taskData,
                 {

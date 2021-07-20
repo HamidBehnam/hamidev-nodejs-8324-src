@@ -144,7 +144,9 @@ class ProjectsController {
                     runValidators: true
                 });
 
-            response.status(200).send('project was successfully updated');
+            response.status(200).send({
+                message: 'project was successfully updated'
+            });
         } catch (error) {
 
             response.status(errorHandlerService.getStatusCode(error)).send(error);
